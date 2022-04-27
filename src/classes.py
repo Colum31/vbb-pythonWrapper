@@ -1,5 +1,6 @@
 import requests
 import enum
+import datetime
 
 DEBUG = True
 
@@ -11,11 +12,34 @@ class Modes(enum.Enum):
     STOPS_ID_DEPARTURES = 3
 
 
+class Departure:
+    tripId = ""
+    plannedWhen = ""
+    delay = 0
+    line = None
+    direction = ""
+    cancelled = False
+
+    def __init__(self, tripId, plannedWhen, delay, line, direction):
+        self.plannedWhen = plannedWhen
+        self.tripId = tripId
+        self.delay = delay
+        self.line = line
+        self.direction = direction
+
+    def __str__(self):
+        info = "{}  {}  {}".format(self.line.name, self.direction, getMinutesToDepartures(self.plannedWhen, self.delay))
+
+        if self.cancelled:
+            info = info + " CANCELLED"
+        return info
+
 class Station:
     stationId = ""
     name = ""
     products = list()
     lines = list()
+    departures = list()
 
     def __init__(self, stationId):
         self.stationId = stationId
@@ -45,6 +69,14 @@ class Station:
 
         if response.status_code == 200:
             self.name = response.json()["name"]
+        else:
+            print("Got invalid response\nstatus={}\n".format(response.status_code))
+
+    def getDepartures(self, span=10):
+        response = makeStopsRequest(self.stationId, Modes.STOPS_ID_DEPARTURES, span=span)
+
+        if response.status_code == 200:
+            parseStopsResponse(response.json(), Modes.STOPS_ID_DEPARTURES, self)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -81,7 +113,6 @@ class Line:
         return "{}: {} is a {}".format(self.lineId, self.name, self.product)
 
 
-
 API_HOST = "http://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
@@ -112,7 +143,7 @@ Makes a request string and parameters in order to fetch information from stops A
 '''
 
 
-def makeStopsRequest(stopId, mode):
+def makeStopsRequest(stopId, mode, span=10):
     data = None
     requestString = API_HOST + API_GET_STOPS
 
@@ -126,6 +157,9 @@ def makeStopsRequest(stopId, mode):
 
     elif mode == Modes.STOPS_ID_DEPARTURES:
         requestString += stopIdStr + "/departures"
+
+        if span != 10:
+            data = {"duration": span}
 
     return fetchRequest(requestString, data)
 
@@ -183,7 +217,8 @@ def parseStationResponse(response, station, mode):
         for entry in response:
             result = response[entry]
 
-            newStation = Station(result["id"], result["name"])
+            newStation = Station(result["id"])
+            newStation.name = result["name"]
             stations.append(newStation)
 
         return stations
@@ -217,4 +252,31 @@ def parseStopsResponse(response, mode, station):
         for product in products:
             if products[product]:
                 station.products.append(product)
+
+    elif mode == Modes.STOPS_ID_DEPARTURES:
+
+        for dep in response:
+
+            lineResponse = dep["line"]
+            newLine = Line(lineResponse["id"], lineResponse["name"], lineResponse["product"])
+
+            newDeparture = Departure(dep["tripId"], dep["plannedWhen"], dep["delay"], newLine, dep["direction"])
+
+            if "cancelled" in dep:
+                newDeparture.cancelled = dep["cancelled"]
+
+            station.departures.append(newDeparture)
         return
+
+
+def getMinutesToDepartures(depTime, delay):
+
+    if delay is None:
+        delay = 0
+
+    timeParsed = depTime[:-6]
+
+    diff = datetime.datetime.fromisoformat(timeParsed) - datetime.datetime.now()
+    diff_seconds = diff.total_seconds() + delay / 60
+
+    return int(diff_seconds / 60)
