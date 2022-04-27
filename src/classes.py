@@ -7,6 +7,8 @@ DEBUG = True
 API_HOST = "http://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
+API_GET_JOURNEY = "journeys"
+
 
 class Modes(enum.Enum):
     """
@@ -15,14 +17,114 @@ class Modes(enum.Enum):
 
     STATIONS_QUERY = 0
     STATIONS_ID = 1
+
     STOPS_ID = 2
     STOPS_ID_DEPARTURES = 3
+
+    JOURNEY_BY_ID = 4
+
+
+class Connections:
+    """
+    Holds information about multiple connections between origin and destination.
+    """
+    origin = None
+    destination = None
+
+    routes = None
+
+    def __init__(self, origin, destination):
+        self.origin = origin
+        self.destination = destination
+
+    def getConnections(self):
+        response = makeJourneyRequest(self, Modes.JOURNEY_BY_ID)
+
+        if response.status_code == 200:
+            parseJourneyResponse(response.json(), self, Modes.JOURNEY_BY_ID)
+        else:
+            print("Got invalid response\nstatus={}\n".format(response.status_code))
+
+
+class Journey:
+    """
+    Holds information about a single connection between origin and destination.
+    """
+
+    # TODO:
+    # - add length of journey
+    # - add start / stop date
+    # - refreshing Details?
+    # - delay
+
+    origin = None
+    destination = None
+
+    legs = None
+    numberTransfers = 0
+
+    def __init__(self, origin, destination):
+        self.origin = origin
+        self.destination = destination
+
+    def getTransfers(self):
+        self.numberTransfers = len(self.legs) - 1
+
+    def __str__(self):
+        journeyString = "Transits: {}\nRoute:\n".format(self.numberTransfers)
+
+        for l in self.legs:
+            journeyString += str(l) + '\n'
+
+        return journeyString
+
+
+class Leg:
+    """
+    A leg of a journey.
+    """
+    origin = ""
+    originId = ""
+
+    destination = ""
+    destinationId = ""
+
+    transportLine = None
+    lineDirection = ""
+
+    plannedDeparture = None
+    departureDelay = 0
+
+    plannedArrival = None
+    arrivalDelay = 0
+
+    walking = False
+    walkingDistance = 0
+
+    def __init__(self, origin, destination, transportLine, plannedDeparture, plannedArrival,  lineDirection, walking):
+
+        self.origin = origin
+        self.destination = destination
+        self.transportLine = transportLine
+        self.lineDirection = lineDirection
+
+        self.plannedDeparture = plannedDeparture
+        self.plannedArrival = plannedArrival
+
+        self.walking = walking
+
+    def __str__(self):
+        if self.walking:
+            return self.origin + " -> " + self.destination
+        else:
+            return self.origin + " -> " + self.transportLine.name + " " + self.lineDirection + " -> " + self.destination
 
 
 class Departure:
     """
     Contains information about a specific departure.
     """
+
     tripId = ""
     plannedWhen = ""
     delay = 0
@@ -48,6 +150,7 @@ class Station:
     """
     Contains information about a station.
     """
+
     stationId = ""
     name = ""
     products = list()
@@ -153,6 +256,17 @@ def fetchRequest(requestString, queryParams):
     return response
 
 
+def makeJourneyRequest(journeyObj, mode):
+
+    data = None
+    requestString = API_HOST + API_GET_JOURNEY
+
+    if mode == Modes.JOURNEY_BY_ID:
+        data = {"from": journeyObj.origin, "to": journeyObj.destination}
+
+    return fetchRequest(requestString, data)
+
+
 def makeStopsRequest(stopId, mode, span=10):
     """
     Makes a request string and parameters in order to fetch information from stops API endpoint. Makes the
@@ -230,6 +344,7 @@ def parseStationResponse(response, station, mode):
     :return:    None, if the response is empty, or mode is STATION_ID
                 a list of station objects, if mode STATION_QUERY
     """
+
     dictItems = len(response)
 
     if not (type(response) is dict):
@@ -268,14 +383,14 @@ def parseStationResponse(response, station, mode):
 
 def parseStopsResponse(response, mode, station):
     """
-        Parses a stop request.
+    Parses a stop request.
 
-        :param response: API stop response to parse
-        :param station: Station object to parse request into
-        :param mode: type of information to parse
-        :return:    None, if the response is empty, or on other error
+    :param response: API stop response to parse
+    :param station: Station object to parse request into
+    :param mode: type of information to parse
+    :return:    None, if the response is empty, or on other error
                     0 on success
-        """
+    """
 
     dictItems = len(response)
 
@@ -310,6 +425,60 @@ def parseStopsResponse(response, mode, station):
             station.departures.append(newDeparture)
 
     return 0
+
+def parseJourneyResponse(response, connectionsObj, mode):
+    """
+    Parses a journey request.
+
+    :param response: API journey response to parse
+    :param connectionsObj: a connections object to store connection information into
+    :param mode: type of information to parse
+    :return: None
+    """
+
+    if mode == Modes.JOURNEY_BY_ID:
+        # Parse possible connections between two stations, addressed by ID's
+
+        journeys = response["journeys"]
+        connectionsObj.routes = list()
+
+        for j in journeys:
+
+            journeyObj = Journey(connectionsObj.origin, connectionsObj.destination)
+            journeyObj.legs = list()
+
+            legs = j["legs"]
+
+            for l in legs:
+
+                line = None
+                walking = False
+                direction = ""
+
+                if "walking" in l:
+
+                    if l["origin"]["name"] == l["destination"]["name"]:
+                        # filter out transfer on station
+                        continue
+
+                    walking = True
+                else:
+                    # "optional" responses that are not set when walking
+                    line = Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
+                    direction = l["direction"]
+
+                newLeg = Leg(l["origin"]["name"], l["destination"]["name"], line, l["plannedDeparture"],
+                             l["plannedArrival"],  direction, walking)
+
+                if walking:
+                    newLeg.walkingDistance = l["distance"]
+
+                journeyObj.legs.append(newLeg)
+
+            journeyObj.getTransfers()
+            connectionsObj.routes.append(journeyObj)
+
+    return
 
 
 def getMinutesToDepartures(depTime, delay):
