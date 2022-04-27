@@ -4,8 +4,15 @@ import datetime
 
 DEBUG = True
 
+API_HOST = "http://v5.vbb.transport.rest/"
+API_GET_STATIONS = "stations"
+API_GET_STOPS = "stops/"
 
 class Modes(enum.Enum):
+    """
+    Enum of modes to indicate a operation type.
+    """
+
     STATIONS_QUERY = 0
     STATIONS_ID = 1
     STOPS_ID = 2
@@ -13,6 +20,9 @@ class Modes(enum.Enum):
 
 
 class Departure:
+    """
+    Contains information about a specific departure.
+    """
     tripId = ""
     plannedWhen = ""
     delay = 0
@@ -35,6 +45,9 @@ class Departure:
         return info
 
 class Station:
+    """
+    Contains information about a station.
+    """
     stationId = ""
     name = ""
     products = list()
@@ -100,6 +113,10 @@ class Station:
 
 
 class Line:
+    """
+    Contains information about a line.
+    """
+
     lineId = ""
     name = ""
     product = ""
@@ -113,17 +130,15 @@ class Line:
         return "{}: {} is a {}".format(self.lineId, self.name, self.product)
 
 
-API_HOST = "http://v5.vbb.transport.rest/"
-API_GET_STATIONS = "stations"
-API_GET_STOPS = "stops/"
-
-
-'''
-Sends the request.
-'''
-
-
 def fetchRequest(requestString, queryParams):
+    """
+    Sends the request.
+
+    :param requestString: The base url with an endpoint
+    :param queryParams: a dictionary containing optional query arguments
+    :returns: a response for the request, or None on Error
+    """
+
     response = None
 
     try:
@@ -138,12 +153,17 @@ def fetchRequest(requestString, queryParams):
     return response
 
 
-'''
-Makes a request string and parameters in order to fetch information from stops API endpoint.
-'''
-
-
 def makeStopsRequest(stopId, mode, span=10):
+    """
+    Makes a request string and parameters in order to fetch information from stops API endpoint. Makes the
+    request via fetchRequest().
+
+    :param stopId: The stop id to get information for.
+    :param mode: The type of stop request to make.
+    :param span: if mode is STOPS_ID_DEPARTURES, span is used to limit the departures for the next span minutes
+    :return: Returns the fetched request.
+    """
+
     data = None
     requestString = API_HOST + API_GET_STOPS
 
@@ -164,19 +184,26 @@ def makeStopsRequest(stopId, mode, span=10):
     return fetchRequest(requestString, data)
 
 
-'''
-Makes a request string and parameters in order to fetch information from stations API endpoint.
-'''
+def makeStationsRequest(stationId, mode, limit=3, fuzzy=False, completion=True):
+    """
+    Makes a request string and parameters in order to fetch information from station API endpoint. Makes the
+    request via fetchRequest().
 
+    :param stationId: The station id to get information for.
+    :param mode: The type of station request to make.
+    :param limit: (optional) limit the amount of stations returned by the API in a STATIONS_QUERY request.
+    :param fuzzy: (optional) set to indicate possible typos in stationId by the API in a STATIONS_QUERY request.
+    :param completion: (optional) set to indicate stationId to be not full name of a station in a STATIONS_QUERY request.
+    :return: Returns the fetched request.
+    """
 
-def makeStationsRequest(station, mode, limit=3, fuzzy=False, completion=True):
     data = None
     requestString = API_HOST + API_GET_STATIONS
 
-    if station is not str:
-        stationStr = str(station)
+    if stationId is not str:
+        stationStr = str(stationId)
     else:
-        stationStr = station
+        stationStr = stationId
 
     if mode == Modes.STATIONS_ID:
         requestString += "/" + stationStr
@@ -193,12 +220,16 @@ def makeStationsRequest(station, mode, limit=3, fuzzy=False, completion=True):
     return fetchRequest(requestString, data)
 
 
-'''
-Parses requests of stations endpoint
-'''
-
-
 def parseStationResponse(response, station, mode):
+    """
+    Parses a station request.
+
+    :param response: API station response to parse
+    :param station: Station object to parse request into
+    :param mode: type of information to parse
+    :return:    None, if the response is empty, or mode is STATION_ID
+                a list of station objects, if mode STATION_QUERY
+    """
     dictItems = len(response)
 
     if not (type(response) is dict):
@@ -235,19 +266,30 @@ def parseStationResponse(response, station, mode):
         return
 
 
-'''
-Parses requests of stops endpoint
-'''
-
-
 def parseStopsResponse(response, mode, station):
+    """
+        Parses a stop request.
+
+        :param response: API stop response to parse
+        :param station: Station object to parse request into
+        :param mode: type of information to parse
+        :return:    None, if the response is empty, or on other error
+                    0 on success
+        """
+
+    dictItems = len(response)
+
+    if dictItems == 0:
+        print("Response is empty!")
+        return None
+
     if mode == Modes.STOPS_ID:
         # parse products
         try:
             products = response["products"]
         except KeyError:
             print("Error: No products found in response!")
-            return
+            return None
 
         for product in products:
             if products[product]:
@@ -266,10 +308,17 @@ def parseStopsResponse(response, mode, station):
                 newDeparture.cancelled = dep["cancelled"]
 
             station.departures.append(newDeparture)
-        return
+
+    return 0
 
 
 def getMinutesToDepartures(depTime, delay):
+    """
+    Calculates approximate minutes to a departure.
+    :param depTime: ISO datetime string of the planned departure
+    :param delay: the delay of a departure
+    :return: amount of minutes to departure
+    """
 
     if delay is None:
         delay = 0
