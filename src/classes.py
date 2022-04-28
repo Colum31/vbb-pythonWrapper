@@ -4,10 +4,12 @@ import datetime
 
 DEBUG = True
 
-API_HOST = "http://v5.vbb.transport.rest/"
+API_HOST = "https://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
 API_GET_JOURNEY = "journeys"
+
+HEADER = {"User-Agent": "vbb-pythonWrapper (in development)"}
 
 
 class Modes(enum.Enum):
@@ -67,9 +69,6 @@ class Journey:
         self.origin = origin
         self.destination = destination
 
-    def getTransfers(self):
-        self.numberTransfers = len(self.legs) - 1
-
     def __str__(self):
         journeyString = "Transits: {}\nRoute:\n".format(self.numberTransfers)
 
@@ -77,6 +76,9 @@ class Journey:
             journeyString += str(l) + '\n'
 
         return journeyString
+
+    def getTransfers(self):
+        self.numberTransfers = len(self.legs) - 1
 
 
 class Leg:
@@ -98,6 +100,8 @@ class Leg:
     plannedArrival = None
     arrivalDelay = 0
 
+    timeDurationMinutes = 0
+
     walking = False
     walkingDistance = 0
 
@@ -114,11 +118,28 @@ class Leg:
         self.walking = walking
 
     def __str__(self):
-        if self.walking:
-            return self.origin + " -> " + self.destination
-        else:
-            return self.origin + " -> " + self.transportLine.name + " " + self.lineDirection + " -> " + self.destination
 
+        depStr = "[{}] {} -> ".format(getDateTimeHourMinuteString(self.plannedDeparture, self.departureDelay), self.origin)
+        arrStr = " -> [{}] {}".format(getDateTimeHourMinuteString(self.plannedArrival, self.arrivalDelay), self.destination)
+
+        if self.walking:
+
+            walkStr = "{}m".format(self.walkingDistance)
+            return depStr + walkStr + arrStr
+        else:
+
+            lineStr = "{} {}".format(self.transportLine.name, self.lineDirection)
+            return depStr + lineStr + arrStr
+
+    def setTimeDuration(self):
+
+        diff = datetime.datetime.fromisoformat(self.plannedArrival) - datetime.datetime.fromisoformat(self.plannedDeparture)
+        diff_seconds = diff.total_seconds()
+
+        if not ((self.arrivalDelay is None) or (self.departureDelay is None)):
+            diff_seconds += self.arrivalDelay - self.departureDelay
+
+        self.timeDurationMinutes = int(diff_seconds / 60)
 
 class Departure:
     """
@@ -245,7 +266,7 @@ def fetchRequest(requestString, queryParams):
     response = None
 
     try:
-        response = requests.get(requestString, queryParams)
+        response = requests.get(requestString, queryParams, headers=HEADER)
 
         if DEBUG:
             print(response.url)
@@ -256,13 +277,21 @@ def fetchRequest(requestString, queryParams):
     return response
 
 
-def makeJourneyRequest(journeyObj, mode):
+def makeJourneyRequest(connectionsObj, mode):
+    """
+    Makes a request string and parameters in order to fetch information from journey API endpoint. Makes the
+    request via fetchRequest().
+
+    :param connectionsObj: A connections object to get start and endpoint from
+    :param mode: The type of request to make
+    :return: Returns the fetched request.
+    """
 
     data = None
     requestString = API_HOST + API_GET_JOURNEY
 
     if mode == Modes.JOURNEY_BY_ID:
-        data = {"from": journeyObj.origin, "to": journeyObj.destination}
+        data = {"from": connectionsObj.origin, "to": connectionsObj.destination}
 
     return fetchRequest(requestString, data)
 
@@ -455,9 +484,12 @@ def parseJourneyResponse(response, connectionsObj, mode):
                 walking = False
                 direction = ""
 
+                arrivalDelay = 0
+                departureDelay = 0
+
                 if "walking" in l:
 
-                    if l["origin"]["name"] == l["destination"]["name"]:
+                    if l["origin"]["id"] == l["destination"]["id"]:
                         # filter out transfer on station
                         continue
 
@@ -466,13 +498,19 @@ def parseJourneyResponse(response, connectionsObj, mode):
                     # "optional" responses that are not set when walking
                     line = Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
                     direction = l["direction"]
+                    arrivalDelay = l["arrivalDelay"]
+                    departureDelay = l["departureDelay"]
 
                 newLeg = Leg(l["origin"]["name"], l["destination"]["name"], line, l["plannedDeparture"],
                              l["plannedArrival"],  direction, walking)
 
+                newLeg.departureDelay = departureDelay
+                newLeg.arrivalDelay = arrivalDelay
+
                 if walking:
                     newLeg.walkingDistance = l["distance"]
 
+                newLeg.setTimeDuration()
                 journeyObj.legs.append(newLeg)
 
             journeyObj.getTransfers()
@@ -498,3 +536,18 @@ def getMinutesToDepartures(depTime, delay):
     diff_seconds = diff.total_seconds() + delay / 60
 
     return int(diff_seconds / 60)
+
+
+def getDateTimeHourMinuteString(dt, delay=0):
+    """
+    Makes a string containing hour and minute of a given datetime.
+    :param dt: datetime to calculate string for
+    :param delay: a possible delay (in seconds) to add to datetime before makng the string
+    :return: hh:mm formatted string of datetime time
+    """
+
+    if delay is None:
+        delay = 0
+
+    dtObj = datetime.datetime.fromisoformat(dt) + datetime.timedelta(seconds=delay)
+    return dtObj.strftime("%H:%M")
