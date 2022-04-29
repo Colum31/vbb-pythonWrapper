@@ -31,14 +31,49 @@ class Connections:
     """
     Holds information about multiple connections between origin and destination.
     """
-    originId = None
-    destinationId = None
+
+    originStation = None
+    destinationStation = None
 
     routes = None
 
     def __init__(self, origin, destination):
-        self.originId = origin
-        self.destinationId = destination
+
+        if origin is Station:
+            self.originStation = origin
+        else:
+            self.originStation = Station(origin)
+
+        if destination is Station:
+            self.destinationStation = destination
+        else:
+            self.destinationStation = Station(destination)
+
+    def __str__(self):
+        stationStr = "{} -> {} \n-----------------------------------------\n".format(self.originStation.name, self.destinationStation.name)
+        stationStr += "{} routes:\n".format(len(self.routes))
+
+        allRoutesStr = ""
+
+        routeStr = ""
+
+        for r in self.routes:
+            routeStr = "[{}] -> [{}] ({}min): ".format(getDateTimeHourMinuteString(r.journeyStart), getDateTimeHourMinuteString(r.journeyEnd), r.journeyLength)
+
+            for l in r.legs:
+                mode = l.transportLine
+
+                if mode is not None:
+                    mode = mode.name
+                else:
+                    mode = "walking"
+
+                routeStr += "{}, ".format(mode)
+
+            routeStr = routeStr[:-2]
+            allRoutesStr += routeStr + '\n'
+
+        return stationStr + allRoutesStr
 
     def getConnections(self):
         response = makeJourneyRequest(self, Modes.JOURNEY_BY_ID)
@@ -55,13 +90,10 @@ class Journey:
     """
 
     # TODO:
-    # - add length of journey
-    # - add start / stop date
     # - refreshing Details?
-    # - delay
 
-    originId = None
-    destinationId = None
+    originStation = None
+    destinationStation = None
 
     legs = None
     numberTransfers = 0
@@ -71,16 +103,18 @@ class Journey:
     journeyEnd = ""
 
     def __init__(self, origin, destination):
-        self.originId = origin
-        self.destinationId = destination
+        self.originStation = origin
+        self.destinationStation = destination
 
     def __str__(self):
+
+        stationStr = "{} -> {} \n-----------------------------------------\n".format(self.originStation.name, self.destinationStation.name)
         journeyString = "{} -> {} ({} min), {} transit(s)\n".format(getDateTimeHourMinuteString(self.journeyStart), getDateTimeHourMinuteString(self.journeyEnd), self.journeyLength, self.numberTransfers)
 
         for l in self.legs:
             journeyString += str(l) + '\n'
 
-        return journeyString
+        return stationStr + journeyString
 
     def getTransfers(self):
         self.numberTransfers = len(self.legs) - 1
@@ -309,7 +343,7 @@ def makeJourneyRequest(connectionsObj, mode):
     requestString = API_HOST + API_GET_JOURNEY
 
     if mode == Modes.JOURNEY_BY_ID:
-        data = {"from": connectionsObj.originId, "to": connectionsObj.destinationId}
+        data = {"from": connectionsObj.originStation.stationId, "to": connectionsObj.destinationStation.stationId}
 
     return fetchRequest(requestString, data)
 
@@ -491,8 +525,11 @@ def parseJourneyResponse(response, connectionsObj, mode):
 
         for j in journeys:
 
-            journeyObj = Journey(connectionsObj.originId, connectionsObj.destinationId)
+            journeyObj = Journey(connectionsObj.originStation.stationId, connectionsObj.destinationStation.stationId)
             journeyObj.legs = list()
+
+            journeyObj.originStation = connectionsObj.originStation
+            journeyObj.destinationStation = connectionsObj.destinationStation
 
             legs = j["legs"]
 
