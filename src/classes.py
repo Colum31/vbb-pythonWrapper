@@ -1,6 +1,7 @@
 import requests
 import enum
 import datetime
+from math import ceil
 
 DEBUG = True
 
@@ -30,14 +31,14 @@ class Connections:
     """
     Holds information about multiple connections between origin and destination.
     """
-    origin = None
-    destination = None
+    originId = None
+    destinationId = None
 
     routes = None
 
     def __init__(self, origin, destination):
-        self.origin = origin
-        self.destination = destination
+        self.originId = origin
+        self.destinationId = destination
 
     def getConnections(self):
         response = makeJourneyRequest(self, Modes.JOURNEY_BY_ID)
@@ -59,18 +60,22 @@ class Journey:
     # - refreshing Details?
     # - delay
 
-    origin = None
-    destination = None
+    originId = None
+    destinationId = None
 
     legs = None
     numberTransfers = 0
 
+    journeyLength = 0
+    journeyStart = ""
+    journeyEnd = ""
+
     def __init__(self, origin, destination):
-        self.origin = origin
-        self.destination = destination
+        self.originId = origin
+        self.destinationId = destination
 
     def __str__(self):
-        journeyString = "Transits: {}\nRoute:\n".format(self.numberTransfers)
+        journeyString = "{} -> {} ({} min), {} transit(s)\n".format(getDateTimeHourMinuteString(self.journeyStart), getDateTimeHourMinuteString(self.journeyEnd), self.journeyLength, self.numberTransfers)
 
         for l in self.legs:
             journeyString += str(l) + '\n'
@@ -80,6 +85,19 @@ class Journey:
     def getTransfers(self):
         self.numberTransfers = len(self.legs) - 1
 
+    def getTimeInfo(self):
+
+        firstLeg = self.legs[0]
+        lastLeg = self.legs[-1]
+
+        journeyStartDt = datetime.datetime.fromisoformat(firstLeg.plannedDeparture) + datetime.timedelta(seconds=firstLeg.departureDelay)
+        self.journeyStart = journeyStartDt.isoformat()
+
+        journeyEndDt = datetime.datetime.fromisoformat(lastLeg.plannedArrival) + datetime.timedelta(seconds=lastLeg.arrivalDelay)
+        self.journeyEnd = journeyEndDt.isoformat()
+
+        journeyLengthTd = journeyEndDt - journeyStartDt
+        self.journeyLength = int(ceil(journeyLengthTd.total_seconds() / 60))
 
 class Leg:
     """
@@ -291,7 +309,7 @@ def makeJourneyRequest(connectionsObj, mode):
     requestString = API_HOST + API_GET_JOURNEY
 
     if mode == Modes.JOURNEY_BY_ID:
-        data = {"from": connectionsObj.origin, "to": connectionsObj.destination}
+        data = {"from": connectionsObj.originId, "to": connectionsObj.destinationId}
 
     return fetchRequest(requestString, data)
 
@@ -473,7 +491,7 @@ def parseJourneyResponse(response, connectionsObj, mode):
 
         for j in journeys:
 
-            journeyObj = Journey(connectionsObj.origin, connectionsObj.destination)
+            journeyObj = Journey(connectionsObj.originId, connectionsObj.destinationId)
             journeyObj.legs = list()
 
             legs = j["legs"]
@@ -498,8 +516,8 @@ def parseJourneyResponse(response, connectionsObj, mode):
                     # "optional" responses that are not set when walking
                     line = Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
                     direction = l["direction"]
-                    arrivalDelay = l["arrivalDelay"]
-                    departureDelay = l["departureDelay"]
+                    arrivalDelay = int(l["arrivalDelay"] or 0)
+                    departureDelay = int(l["departureDelay"] or 0)
 
                 newLeg = Leg(l["origin"]["name"], l["destination"]["name"], line, l["plannedDeparture"],
                              l["plannedArrival"],  direction, walking)
@@ -514,6 +532,7 @@ def parseJourneyResponse(response, connectionsObj, mode):
                 journeyObj.legs.append(newLeg)
 
             journeyObj.getTransfers()
+            journeyObj.getTimeInfo()
             connectionsObj.routes.append(journeyObj)
 
     return
@@ -541,7 +560,7 @@ def getMinutesToDepartures(depTime, delay):
 def getDateTimeHourMinuteString(dt, delay=0):
     """
     Makes a string containing hour and minute of a given datetime.
-    :param dt: datetime to calculate string for
+    :param dt: datetime string to calculate string for
     :param delay: a possible delay (in seconds) to add to datetime before makng the string
     :return: hh:mm formatted string of datetime time
     """
