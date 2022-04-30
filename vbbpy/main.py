@@ -1,4 +1,4 @@
-import classes
+from vbbpy import classes
 
 def getDeparturesFromStation(time):
 

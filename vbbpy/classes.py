@@ -230,9 +230,11 @@ class Station:
     lines = list()
     departures = list()
 
-    def __init__(self, stationId):
+    def __init__(self, stationId, getName=True):
         self.stationId = stationId
-        self.getStationName()
+
+        if getName:
+            self.getStationName()
 
     def __str__(self):
         return "{}: {} ".format(self.stationId, self.name)
@@ -444,7 +446,7 @@ def parseStationResponse(response, station, mode):
         for entry in response:
             result = response[entry]
 
-            newStation = Station(result["id"])
+            newStation = Station(result["id"], getName=False)
             newStation.name = result["name"]
             stations.append(newStation)
 
