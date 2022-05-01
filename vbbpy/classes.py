@@ -428,11 +428,11 @@ def parseStationResponse(response, station, mode):
                 a list of station objects, if mode STATION_QUERY
     """
 
-    dictItems = len(response)
-
     if not (type(response) is dict):
         print("response is not a dict")
         return None
+
+    dictItems = len(response)
 
     if dictItems == 0:
         print("Response is empty!")
@@ -591,7 +591,7 @@ def getMinutesToDepartures(depTime, delay):
     timeParsed = depTime[:-6]
 
     diff = datetime.datetime.fromisoformat(timeParsed) - datetime.datetime.now()
-    diff_seconds = diff.total_seconds() + delay / 60
+    diff_seconds = diff.total_seconds() + delay
 
     return int(diff_seconds / 60)
 
@@ -600,7 +600,7 @@ def getDateTimeHourMinuteString(dt, delay=0):
     """
     Makes a string containing hour and minute of a given datetime.
     :param dt: datetime string to calculate string for
-    :param delay: a possible delay (in seconds) to add to datetime before makng the string
+    :param delay: a possible delay (in seconds) to add to datetime before making the string
     :return: hh:mm formatted string of datetime time
     """
 
