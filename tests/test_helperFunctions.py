@@ -1,5 +1,5 @@
 from unittest import TestCase
-from vbbpy import classes
+from vbbpy import vbbHelper
 import datetime
 
 
@@ -30,7 +30,7 @@ class HelperFunctions(TestCase):
                     "2020-11-23T01:31:01+02:00": "01:31", "2020-11-23T01:31:01": "01:31"}
 
         for data in testData.items():
-            self.assertEqual(data[1], classes.getDateTimeHourMinuteString(data[0]),
+            self.assertEqual(data[1], vbbHelper.getDateTimeHourMinuteString(data[0]),
                              "returned not correct hourMinute string!")
 
     def test_minutesToDepartures(self):
@@ -41,9 +41,9 @@ class HelperFunctions(TestCase):
         :return: None
         """
         for i in range(20):
-            self.assertEqual(i, classes.getMinutesToDepartures(gen_timestring(i), 0),
+            self.assertEqual(i, vbbHelper.getMinutesToDepartures(gen_timestring(i), 0),
                              "returned wrong amount of minutes (without delay)")
-            self.assertEqual(2 * i, classes.getMinutesToDepartures(gen_timestring(i), i * 60),
+            self.assertEqual(2 * i, vbbHelper.getMinutesToDepartures(gen_timestring(i), i * 60),
                              "returned wrong amount of minutes (with delay)")
 
     def test_parseStationRequest_emptyResponse(self):
@@ -54,9 +54,9 @@ class HelperFunctions(TestCase):
         """
 
         testData = "{}"
-        self.assertEqual(None, classes.parseStationResponse(testData, None, classes.Modes.STATIONS_ID),
+        self.assertEqual(None, vbbHelper.parseStationResponse(testData, None, vbbHelper.Modes.STATIONS_ID),
                          "expected to return None on empty response")
-        self.assertEqual(None, classes.parseStationResponse(testData, None, classes.Modes.STATIONS_QUERY),
+        self.assertEqual(None, vbbHelper.parseStationResponse(testData, None, vbbHelper.Modes.STATIONS_QUERY),
                          "expected to return None on empty response")
 
     def test_parseStationRequest_stationQuery_parse_id_name(self):
@@ -71,7 +71,7 @@ class HelperFunctions(TestCase):
 
         testSetComplete = {testSet1["id"]: testSet1, testSet2["id"]: testSet2}
 
-        results = classes.parseStationResponse(testSetComplete, None, classes.Modes.STATIONS_QUERY)
+        results = vbbHelper.parseStationResponse(testSetComplete, None, vbbHelper.Modes.STATIONS_QUERY)
 
         if type(results) is not list:
             self.fail("Expected to return a list")

@@ -4,9 +4,7 @@
 # Author Colum31, 24.2.2022
 
 import sys
-from vbbpy import classes
-from vbbpy.classes import Modes
-
+from station import Station
 
 def main():
 
@@ -14,8 +12,7 @@ def main():
         print("usage: {} [Station name]".format(sys.argv[0]))
         sys.exit(1)
 
-    apiResponse = classes.makeStationsRequest(sys.argv[1], Modes.STATIONS_QUERY, fuzzy=True, completion=True)
-    resultList = classes.parseStationResponse(apiResponse.json(), None, Modes.STATIONS_QUERY)
+    resultList = Station.queryStations(sys.argv[1])
 
     if resultList is None:
         return 1

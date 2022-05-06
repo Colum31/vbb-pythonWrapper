@@ -1,1 +1,1 @@
-from vbbpy import classes
+from vbbpy import vbbHelper
