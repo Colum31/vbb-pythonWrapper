@@ -1,10 +1,4 @@
-from line import Line
-from modes import Modes
-from station import Station
-from leg import Leg
-from vbbHelper import VbbHelper, API_HOST, API_GET_JOURNEY
-from journey import Journey
-
+from vbbpy import line, modes, station, leg, vbbHelper, journey
 
 class Connections:
     """
@@ -18,15 +12,15 @@ class Connections:
 
     def __init__(self, origin, destination):
 
-        if origin is Station:
+        if origin is station.Station:
             self.originStation = origin
         else:
-            self.originStation = Station(origin)
+            self.originStation = station.Station(origin)
 
-        if destination is Station:
+        if destination is station.Station:
             self.destinationStation = destination
         else:
-            self.destinationStation = Station(destination)
+            self.destinationStation = station.Station(destination)
 
     def __str__(self):
         stationStr = "{} -> {} \n-----------------------------------------\n".format(self.originStation.name,
@@ -35,11 +29,9 @@ class Connections:
 
         allRoutesStr = ""
 
-        routeStr = ""
-
         for r in self.routes:
-            routeStr = "[{}] -> [{}] ({}min): ".format(VbbHelper.getDateTimeHourMinuteString(r.journeyStart),
-                                                       VbbHelper.getDateTimeHourMinuteString(r.journeyEnd), r.journeyLength)
+            routeStr = "[{}] -> [{}] ({}min): ".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyStart),
+                                                       vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyEnd), r.journeyLength)
 
             for l in r.legs:
                 mode = l.transportLine
@@ -57,10 +49,10 @@ class Connections:
         return stationStr + allRoutesStr
 
     def getConnections(self):
-        response = self.makeJourneyRequest(Modes.JOURNEY_BY_ID)
+        response = self.makeJourneyRequest(modes.Modes.JOURNEY_BY_ID)
 
         if response.status_code == 200:
-            self.parseJourneyResponse(response.json(), Modes.JOURNEY_BY_ID)
+            self.parseJourneyResponse(response.json(), modes.Modes.JOURNEY_BY_ID)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -74,12 +66,12 @@ class Connections:
         """
 
         data = None
-        requestString = API_HOST + API_GET_JOURNEY
+        requestString = vbbHelper.API_HOST + vbbHelper.API_GET_JOURNEY
 
-        if mode == Modes.JOURNEY_BY_ID:
+        if mode == modes.Modes.JOURNEY_BY_ID:
             data = {"from": self.originStation.stationId, "to": self.destinationStation.stationId}
 
-        return VbbHelper.fetchRequest(requestString, data)
+        return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
     def parseJourneyResponse(self, response, mode):
         """
@@ -90,7 +82,7 @@ class Connections:
         :return: None
         """
 
-        if mode == Modes.JOURNEY_BY_ID:
+        if mode == modes.Modes.JOURNEY_BY_ID:
             # Parse possible connections between two stations, addressed by ID's
 
             journeys = response["journeys"]
@@ -98,7 +90,7 @@ class Connections:
 
             for j in journeys:
 
-                journeyObj = Journey(self.originStation.stationId,
+                journeyObj = journey.Journey(self.originStation.stationId,
                                      self.destinationStation.stationId)
                 journeyObj.legs = list()
 
@@ -125,12 +117,12 @@ class Connections:
                         walking = True
                     else:
                         # "optional" responses that are not set when walking
-                        lineObj = Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
+                        lineObj = line.Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
                         direction = l["direction"]
                         arrivalDelay = int(l["arrivalDelay"] or 0)
                         departureDelay = int(l["departureDelay"] or 0)
 
-                    newLeg = Leg(l["origin"]["name"], l["destination"]["name"], lineObj, l["plannedDeparture"],
+                    newLeg = leg.Leg(l["origin"]["name"], l["destination"]["name"], lineObj, l["plannedDeparture"],
                                      l["plannedArrival"], direction, walking)
 
                     newLeg.departureDelay = departureDelay
@@ -147,6 +139,3 @@ class Connections:
                 self.routes.append(journeyObj)
 
         return
-
-
-

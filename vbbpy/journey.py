@@ -1,10 +1,8 @@
 import datetime
 from math import ceil
-import line
-import leg
-from modes import Modes
-from vbbHelper import VbbHelper
-import vbbHelper
+
+from vbbpy import vbbHelper, modes, leg, line
+
 
 class Journey:
     """
@@ -31,8 +29,8 @@ class Journey:
     def __str__(self):
         stationStr = "{} -> {} \n-----------------------------------------\n".format(self.originStation.name,
                                                                                      self.destinationStation.name)
-        journeyString = "{} -> {} ({} min), {} transit(s)\n".format(VbbHelper.getDateTimeHourMinuteString(self.journeyStart),
-                                                                    VbbHelper.getDateTimeHourMinuteString(self.journeyEnd),
+        journeyString = "{} -> {} ({} min), {} transit(s)\n".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(self.journeyStart),
+                                                                    vbbHelper.VbbHelper.getDateTimeHourMinuteString(self.journeyEnd),
                                                                     self.journeyLength, self.numberTransfers)
 
         for l in self.legs:
@@ -71,10 +69,10 @@ class Journey:
         data = None
         requestString = vbbHelper.API_HOST + vbbHelper.API_GET_JOURNEY
 
-        if mode == Modes.JOURNEY_BY_ID:
+        if mode == modes.Modes.JOURNEY_BY_ID:
             data = {"from": connectionsObj.originStation.stationId, "to": connectionsObj.destinationStation.stationId}
 
-        return VbbHelper.fetchRequest(requestString, data)
+        return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
     def parseJourneyResponse(self, response, connectionsObj, mode):
         """
@@ -86,7 +84,7 @@ class Journey:
         :return: None
         """
 
-        if mode == Modes.JOURNEY_BY_ID:
+        if mode == modes.Modes.JOURNEY_BY_ID:
             # Parse possible connections between two stations, addressed by ID's
 
             journeys = response["journeys"]
@@ -143,5 +141,3 @@ class Journey:
                 connectionsObj.routes.append(journeyObj)
 
         return
-
-

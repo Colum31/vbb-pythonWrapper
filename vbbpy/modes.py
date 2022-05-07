@@ -3,7 +3,7 @@ import enum
 
 class Modes(enum.Enum):
     """
-    Enum of modes to indicate a operation type.
+    Enum of modes to indicate an operation type.
     """
 
     STATIONS_QUERY = 0

@@ -1,4 +1,4 @@
-from vbbHelper import VbbHelper
+from vbbpy import vbbHelper
 
 class Departure:
     """
@@ -20,7 +20,7 @@ class Departure:
         self.direction = direction
 
     def __str__(self):
-        info = "{}  {}  {}".format(self.line.name, self.direction, VbbHelper.getMinutesToDepartures(self.plannedWhen, self.delay))
+        info = "{}  {}  {}".format(self.line.name, self.direction, vbbHelper.VbbHelper.getMinutesToDepartures(self.plannedWhen, self.delay))
 
         if self.cancelled:
             info = info + " CANCELLED"

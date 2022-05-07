@@ -1,3 +1,6 @@
 # PyCharm related files
 venv/
 .idea
+build/
+vbbpy.egg-info/
+.pytest_cache/

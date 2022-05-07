@@ -4,7 +4,9 @@
 # Author Colum31, 24.2.2022
 
 import sys
-from station import Station
+
+from vbbpy import station
+
 
 def main():
 
@@ -12,7 +14,7 @@ def main():
         print("usage: {} [Station name]".format(sys.argv[0]))
         sys.exit(1)
 
-    resultList = Station.queryStations(sys.argv[1])
+    resultList = station.Station.queryStations(sys.argv[1])
 
     if resultList is None:
         return 1

@@ -1,6 +1,7 @@
-from unittest import TestCase
-from vbbpy import vbbHelper
 import datetime
+from unittest import TestCase
+
+from vbbpy import vbbHelper
 
 
 def gen_timestring(i):
@@ -30,7 +31,7 @@ class HelperFunctions(TestCase):
                     "2020-11-23T01:31:01+02:00": "01:31", "2020-11-23T01:31:01": "01:31"}
 
         for data in testData.items():
-            self.assertEqual(data[1], vbbHelper.getDateTimeHourMinuteString(data[0]),
+            self.assertEqual(data[1], vbbHelper.VbbHelper.getDateTimeHourMinuteString(data[0]),
                              "returned not correct hourMinute string!")
 
     def test_minutesToDepartures(self):
@@ -41,57 +42,7 @@ class HelperFunctions(TestCase):
         :return: None
         """
         for i in range(20):
-            self.assertEqual(i, vbbHelper.getMinutesToDepartures(gen_timestring(i), 0),
+            self.assertEqual(i, vbbHelper.VbbHelper.getMinutesToDepartures(gen_timestring(i), 0),
                              "returned wrong amount of minutes (without delay)")
-            self.assertEqual(2 * i, vbbHelper.getMinutesToDepartures(gen_timestring(i), i * 60),
+            self.assertEqual(2 * i, vbbHelper.VbbHelper.getMinutesToDepartures(gen_timestring(i), i * 60),
                              "returned wrong amount of minutes (with delay)")
-
-    def test_parseStationRequest_emptyResponse(self):
-        """
-        Tests if parseStationRequests returns None, if the response is empty.
-
-        :return: None
-        """
-
-        testData = "{}"
-        self.assertEqual(None, vbbHelper.parseStationResponse(testData, None, vbbHelper.Modes.STATIONS_ID),
-                         "expected to return None on empty response")
-        self.assertEqual(None, vbbHelper.parseStationResponse(testData, None, vbbHelper.Modes.STATIONS_QUERY),
-                         "expected to return None on empty response")
-
-    def test_parseStationRequest_stationQuery_parse_id_name(self):
-        """
-        Tests if parseStationRequests correctly parses name and id of response in Query mode.
-
-        :return: None
-        """
-
-        testSet1 = {"id": "12345", "name": "test1"}
-        testSet2 = {"id": "67890", "name": "test2"}
-
-        testSetComplete = {testSet1["id"]: testSet1, testSet2["id"]: testSet2}
-
-        results = vbbHelper.parseStationResponse(testSetComplete, None, vbbHelper.Modes.STATIONS_QUERY)
-
-        if type(results) is not list:
-            self.fail("Expected to return a list")
-
-        self.assertEqual(len(testSetComplete), len(results), "Expected to have as many results as test data sets")
-
-        for result in results:
-
-            resId = result.stationId
-            name = result.name
-
-            dataSet = testSetComplete.get(resId)
-
-            if dataSet is None:
-                self.fail("Did not find data in test set")
-
-            if dataSet["id"] is not resId:
-                self.fail("rid of data does not match test data")
-
-            if dataSet["name"] is not name:
-                self.fail("name of data does not match test data")
-
-            testSetComplete.pop(resId)

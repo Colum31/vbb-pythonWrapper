@@ -1,7 +1,4 @@
-import departure
-import line
-from modes import Modes
-from vbbHelper import API_HOST, API_GET_STATIONS, API_GET_STOPS, VbbHelper
+from vbbpy import vbbHelper, modes, line, departure
 
 
 class Station:
@@ -27,10 +24,10 @@ class Station:
     @staticmethod
     def queryStations(query):
 
-        requestString = API_HOST + API_GET_STATIONS
+        requestString = vbbHelper.API_HOST + vbbHelper.API_GET_STATIONS
         data = {"query": query, "fuzzy": True, "completion": True}
 
-        response = VbbHelper.fetchRequest(requestString, data).json()
+        response = vbbHelper.VbbHelper.fetchRequest(requestString, data).json()
         stations = list()
 
         for entry in response:
@@ -43,23 +40,23 @@ class Station:
         return stations
 
     def getProducts(self):
-        response = self.makeStopsRequest(self.stationId, Modes.STOPS_ID)
+        response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
-            self.parseStopsResponse(response.json(), Modes.STOPS_ID, self)
+            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID, self)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
     def getLines(self):
-        response = self.makeStationsRequest(self.stationId, Modes.STATIONS_ID)
+        response = self.makeStationsRequest(self.stationId, modes.Modes.STATIONS_ID)
 
         if response.status_code == 200:
-            self.parseStationResponse(response.json(), self, Modes.STATIONS_ID)
+            self.parseStationResponse(response.json(), self, modes.Modes.STATIONS_ID)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
     def getStationName(self):
-        response = self.makeStopsRequest(self.stationId, Modes.STOPS_ID)
+        response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
             self.name = response.json()["name"]
@@ -67,10 +64,10 @@ class Station:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
     def getDepartures(self, span=10):
-        response = self.makeStopsRequest(self.stationId, Modes.STOPS_ID_DEPARTURES, span=span)
+        response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID_DEPARTURES, span=span)
 
         if response.status_code == 200:
-            self.parseStopsResponse(response.json(), Modes.STOPS_ID_DEPARTURES, self)
+            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID_DEPARTURES, self)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -82,13 +79,13 @@ class Station:
 
             first = True
 
-            for line in self.lines:
-                if line.product == transportMode:
+            for availableLine in self.lines:
+                if availableLine.product == transportMode:
                     if first:
-                        print(line.name, end="")
+                        print(availableLine.name, end="")
                         first = False
                     else:
-                        print(", {}".format(line.name), end="")
+                        print(", {}".format(availableLine.name), end="")
 
             print("")
 
@@ -106,16 +103,16 @@ class Station:
         """
 
         data = None
-        requestString = API_HOST + API_GET_STATIONS
+        requestString = vbbHelper.API_HOST + vbbHelper.API_GET_STATIONS
 
         if stationId is not str:
             stationStr = str(stationId)
         else:
             stationStr = stationId
 
-        if mode == Modes.STATIONS_ID:
+        if mode == modes.Modes.STATIONS_ID:
             requestString += "/" + stationStr
-        elif mode == Modes.STATIONS_QUERY:
+        elif mode == modes.Modes.STATIONS_QUERY:
             data = {"query": stationStr}
 
             if limit != 3:
@@ -125,7 +122,7 @@ class Station:
             if not completion:
                 data.update({"completion": False})
 
-        return VbbHelper.fetchRequest(requestString, data)
+        return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
     def parseStationResponse(self, response, station, mode):
         """
@@ -148,7 +145,7 @@ class Station:
             print("Response is empty!")
             return None
 
-        if mode == Modes.STATIONS_QUERY:
+        if mode == modes.Modes.STATIONS_QUERY:
             # possible stations for query
 
             stations = list()
@@ -162,13 +159,13 @@ class Station:
 
             return stations
 
-        elif mode == Modes.STATIONS_ID:
+        elif mode == modes.Modes.STATIONS_ID:
             # get further information about station: lines
 
             lines = response["lines"]
 
-            for line in lines:
-                addedLine = line.Line(line["id"], line["name"], line["product"])
+            for availableLine in lines:
+                addedLine = availableLine.Line(availableLine["id"], availableLine["name"], availableLine["product"])
                 station.lines.append(addedLine)
 
             return
@@ -185,23 +182,23 @@ class Station:
         """
 
         data = None
-        requestString = API_HOST + API_GET_STOPS
+        requestString = vbbHelper.API_HOST + vbbHelper.API_GET_STOPS
 
         if stopId is not str:
             stopIdStr = str(stopId)
         else:
             stopIdStr = stopId
 
-        if mode == Modes.STOPS_ID:
+        if mode == modes.Modes.STOPS_ID:
             requestString += stopIdStr
 
-        elif mode == Modes.STOPS_ID_DEPARTURES:
+        elif mode == modes.Modes.STOPS_ID_DEPARTURES:
             requestString += stopIdStr + "/departures"
 
             if span != 10:
                 data = {"duration": span}
 
-        return VbbHelper.fetchRequest(requestString, data)
+        return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
     def parseStopsResponse(self, response, mode, station):
         """
@@ -220,7 +217,7 @@ class Station:
             print("Response is empty!")
             return None
 
-        if mode == Modes.STOPS_ID:
+        if mode == modes.Modes.STOPS_ID:
             # parse products
             try:
                 products = response["products"]
@@ -232,7 +229,7 @@ class Station:
                 if products[product]:
                     station.products.append(product)
 
-        elif mode == Modes.STOPS_ID_DEPARTURES:
+        elif mode == modes.Modes.STOPS_ID_DEPARTURES:
 
             for dep in response:
 
@@ -248,4 +245,3 @@ class Station:
                 station.departures.append(newDeparture)
 
         return 0
-

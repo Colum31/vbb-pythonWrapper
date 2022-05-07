@@ -1,6 +1,6 @@
 import datetime
 
-from vbbHelper import VbbHelper
+from vbbpy import vbbHelper
 
 
 class Leg:
@@ -41,8 +41,8 @@ class Leg:
 
     def __str__(self):
 
-        depStr = "[{}] {} -> ".format(VbbHelper.getDateTimeHourMinuteString(self.plannedDeparture, self.departureDelay), self.origin)
-        arrStr = " -> [{}] {}".format(VbbHelper.getDateTimeHourMinuteString(self.plannedArrival, self.arrivalDelay), self.destination)
+        depStr = "[{}] {} -> ".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(self.plannedDeparture, self.departureDelay), self.origin)
+        arrStr = " -> [{}] {}".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(self.plannedArrival, self.arrivalDelay), self.destination)
 
         if self.walking:
 
