@@ -131,8 +131,7 @@ class Station:
         :param response: API station response to parse
         :param station: Station object to parse request into
         :param mode: type of information to parse
-        :return:    None, if the response is empty, or mode is STATION_ID
-                    a list of station objects, if mode STATION_QUERY
+        :return:    None, if the response is empty, or number of available lines
         """
 
         if not (type(response) is dict):
@@ -145,30 +144,16 @@ class Station:
             print("Response is empty!")
             return None
 
-        if mode == modes.Modes.STATIONS_QUERY:
-            # possible stations for query
-
-            stations = list()
-
-            for entry in response:
-                result = response[entry]
-
-                newStation = Station(result["id"], getName=False)
-                newStation.name = result["name"]
-                stations.append(newStation)
-
-            return stations
-
-        elif mode == modes.Modes.STATIONS_ID:
+        if mode == modes.Modes.STATIONS_ID:
             # get further information about station: lines
 
             lines = response["lines"]
 
             for availableLine in lines:
-                addedLine = availableLine.Line(availableLine["id"], availableLine["name"], availableLine["product"])
+                addedLine = line.Line(availableLine["id"], availableLine["name"], availableLine["product"])
                 station.lines.append(addedLine)
 
-            return
+            return len(station.lines)
 
     def makeStopsRequest(self, stopId, mode, span=10):
         """
