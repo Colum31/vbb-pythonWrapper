@@ -1,8 +1,8 @@
-from vbbpy import classes
+from vbbpy import connections, station
 
 def getDeparturesFromStation(time):
 
-    testStation = classes.Station("")
+    testStation = station.Station("")
     testStation.getProducts()
     testStation.getLines()
 
@@ -15,7 +15,7 @@ def getDeparturesFromStation(time):
 
 def main():
 
-    testJourneys = classes.Connections("", "")
+    testJourneys = connections.Connections("", "")
     testJourneys.getConnections()
 
     for j in testJourneys.routes:
