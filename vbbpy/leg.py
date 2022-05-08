@@ -2,7 +2,6 @@ import datetime
 
 from vbbpy import vbbHelper
 
-
 class Leg:
     """
     A leg of a journey.

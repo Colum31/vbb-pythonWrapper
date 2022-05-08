@@ -1,4 +1,4 @@
-from vbbpy import connections, station
+from vbbpy import connections, station, location
 
 def getDeparturesFromStation(time):
 
@@ -12,6 +12,10 @@ def getDeparturesFromStation(time):
     for dep in testStation.departures:
         print(dep)
 
+def addressLookup():
+
+    testAddr = location.Address("")
+    print(testAddr)
 
 def main():
 
@@ -20,6 +24,8 @@ def main():
 
     for j in testJourneys.routes:
         print(j)
+
+    addressLookup()
 
     return 0
 
