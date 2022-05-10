@@ -3,20 +3,32 @@ from geopy.geocoders import Nominatim
 class Address:
 
     addressStr = ""
+    streetName = ""
+    number = 0
+    postalCode = 0
+    city = ""
+
     cords = None
 
     def getCords(self, inputStr):
         geolocator = Nominatim(user_agent="vbbpy: address lookup")
-        location = geolocator.geocode(inputStr)
+        loc = geolocator.geocode(inputStr, addressdetails=True)
 
-        self.addressStr = location.address
-        self.cords = Coordinates(location.latitude, location.longitude)
+        self.addressStr = loc.address
+        self.cords = Coordinates(loc.latitude, loc.longitude)
+
+        addressData = loc.raw.get('address')
+
+        self.streetName = addressData.get('road', "")
+        self.number = addressData.get("house_number", "")
+        self.postalCode = addressData.get("postcode", "")
+        self.city = addressData.get("city", "")
 
     def __init__(self, inputStr):
         self.getCords(inputStr)
 
     def __str__(self):
-        return self.addressStr + '\n' + str(self.cords)
+        return self.streetName + " " + self.number + '\n' + self.postalCode + " " + self.city + '\n' + str(self.cords)
 
 
 class Coordinates:

@@ -1,7 +1,7 @@
 from vbbpy import connections, station, location
 
-def getDeparturesFromStation(time):
 
+def getDeparturesFromStation(time):
     testStation = station.Station("")
     testStation.getProducts()
     testStation.getLines()
@@ -12,18 +12,18 @@ def getDeparturesFromStation(time):
     for dep in testStation.departures:
         print(dep)
 
-def addressLookup():
 
+def addressLookup():
     testAddr = location.Address("")
     print(testAddr)
 
+
 def main():
+    #    testJourneys = connections.Connections("", "")
+    #    testJourneys.getConnections()
 
-    testJourneys = connections.Connections("", "")
-    testJourneys.getConnections()
-
-    for j in testJourneys.routes:
-        print(j)
+    #    for j in testJourneys.routes:
+    #        print(j)
 
     addressLookup()
 
