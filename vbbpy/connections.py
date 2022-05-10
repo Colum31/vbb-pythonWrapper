@@ -1,4 +1,5 @@
-from vbbpy import line, modes, station, leg, vbbHelper, journey
+from vbbpy import line, modes, station, leg, vbbHelper, journey, location
+
 
 class Connections:
     """
@@ -14,10 +15,14 @@ class Connections:
 
         if origin is station.Station:
             self.originStation = origin
+        elif type(origin) is location.Address:
+            self.originStation = origin
         else:
             self.originStation = station.Station(origin)
 
         if destination is station.Station:
+            self.destinationStation = destination
+        elif type(destination) is location.Address:
             self.destinationStation = destination
         else:
             self.destinationStation = station.Station(destination)
@@ -31,7 +36,8 @@ class Connections:
 
         for r in self.routes:
             routeStr = "[{}] -> [{}] ({}min): ".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyStart),
-                                                       vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyEnd), r.journeyLength)
+                                                       vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyEnd),
+                                                       r.journeyLength)
 
             for l in r.legs:
                 mode = l.transportLine
@@ -65,11 +71,22 @@ class Connections:
         :return: Returns the fetched request.
         """
 
-        data = None
+        data = {}
         requestString = vbbHelper.API_HOST + vbbHelper.API_GET_JOURNEY
 
-        if mode == modes.Modes.JOURNEY_BY_ID:
-            data = {"from": self.originStation.stationId, "to": self.destinationStation.stationId}
+        if type(self.originStation) is station.Station:
+            data.update({"from": self.originStation.stationId})
+        elif type(self.originStation) is location.Address:
+            data.update({"from.latitude": self.originStation.cords.latitude})
+            data.update({"from.longitude": self.originStation.cords.longitude})
+            data.update({"from.address": self.originStation.streetName})
+
+        if type(self.destinationStation) is station.Station:
+            data.update({"to": self.destinationStation.stationId})
+        elif type(self.destinationStation) is location.Address:
+            data.update({"to.latitude": self.destinationStation.cords.latitude})
+            data.update({"to.longitude": self.destinationStation.cords.longitude})
+            data.update({"to.address": self.destinationStation.streetName})
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
@@ -90,12 +107,9 @@ class Connections:
 
             for j in journeys:
 
-                journeyObj = journey.Journey(self.originStation.stationId,
-                                     self.destinationStation.stationId)
+                journeyObj = journey.Journey(self.originStation,
+                                             self.destinationStation)
                 journeyObj.legs = list()
-
-                journeyObj.originStation = self.originStation
-                journeyObj.destinationStation = self.destinationStation
 
                 legs = j["legs"]
 
@@ -103,6 +117,8 @@ class Connections:
 
                     lineObj = None
                     walking = False
+                    originName = ""
+                    destinationName = ""
                     direction = ""
 
                     arrivalDelay = 0
@@ -114,6 +130,9 @@ class Connections:
                             # filter out transfer on station
                             continue
 
+                        originName = l.get("origin").get("name") or l.get("origin").get("address")
+                        destinationName = l.get("destination").get("name") or l.get("destination").get("address")
+
                         walking = True
                     else:
                         # "optional" responses that are not set when walking
@@ -122,7 +141,10 @@ class Connections:
                         arrivalDelay = int(l["arrivalDelay"] or 0)
                         departureDelay = int(l["departureDelay"] or 0)
 
-                    newLeg = leg.Leg(l["origin"]["name"], l["destination"]["name"], lineObj, l["plannedDeparture"],
+                        originName = l.get("origin").get("name")
+                        destinationName = l.get("destination").get("name")
+
+                    newLeg = leg.Leg(originName, destinationName, lineObj, l["plannedDeparture"],
                                      l["plannedArrival"], direction, walking)
 
                     newLeg.departureDelay = departureDelay

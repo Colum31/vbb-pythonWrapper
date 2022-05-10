@@ -13,19 +13,24 @@ def getDeparturesFromStation(time):
         print(dep)
 
 
-def addressLookup():
-    testAddr = location.Address("")
+def addressLookup(addrStr):
+    testAddr = location.Address(addrStr)
     print(testAddr)
+
+    return testAddr
 
 
 def main():
-    #    testJourneys = connections.Connections("", "")
-    #    testJourneys.getConnections()
 
-    #    for j in testJourneys.routes:
-    #        print(j)
+    origin = addressLookup("")
+    dest = addressLookup("")
 
-    addressLookup()
+    testJourneys = connections.Connections(origin, dest)
+    testJourneys.getConnections()
+
+    for j in testJourneys.routes:
+        print(j)
+
 
     return 0
 

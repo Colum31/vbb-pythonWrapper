@@ -2,7 +2,7 @@ from geopy.geocoders import Nominatim
 
 class Address:
 
-    addressStr = ""
+    name = ""
     streetName = ""
     number = 0
     postalCode = 0
@@ -14,7 +14,7 @@ class Address:
         geolocator = Nominatim(user_agent="vbbpy: address lookup")
         loc = geolocator.geocode(inputStr, addressdetails=True)
 
-        self.addressStr = loc.address
+        self.name = loc.address
         self.cords = Coordinates(loc.latitude, loc.longitude)
 
         addressData = loc.raw.get('address')
