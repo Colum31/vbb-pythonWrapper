@@ -1,7 +1,7 @@
 import datetime
 from math import ceil
 
-from vbbpy import vbbHelper, modes, leg, line
+from vbbpy import vbbHelper
 
 
 class Journey:
