@@ -91,6 +91,7 @@ class Connections:
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
     def parseJourneyResponse(self, response, mode):
+        # TODO: split this function into journey and leg class member functions
         """
         Parses a journey request.
 
@@ -117,8 +118,6 @@ class Connections:
 
                     lineObj = None
                     walking = False
-                    originName = ""
-                    destinationName = ""
                     direction = ""
 
                     arrivalDelay = 0
@@ -130,8 +129,8 @@ class Connections:
                             # filter out transfer on station
                             continue
 
-                        originName = l.get("origin").get("name") or l.get("origin").get("address")
-                        destinationName = l.get("destination").get("name") or l.get("destination").get("address")
+                        originName = l.get("origin").get("name") or l.get("origin").get("address", "")
+                        destinationName = l.get("destination").get("name") or l.get("destination").get("address", "")
 
                         walking = True
                     else:

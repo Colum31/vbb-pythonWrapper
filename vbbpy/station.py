@@ -1,4 +1,4 @@
-from vbbpy import vbbHelper, modes, line, departure
+from vbbpy import vbbHelper, modes, line, departure, location
 
 
 class Station:
@@ -11,6 +11,7 @@ class Station:
     products = list()
     lines = list()
     departures = list()
+    position = None
 
     def __init__(self, stationId, getName=True):
         self.stationId = stationId
@@ -35,9 +36,17 @@ class Station:
 
             newStation = Station(result["id"], getName=False)
             newStation.name = result["name"]
+            newStation.parseLocation(result.get("location"))
             stations.append(newStation)
 
         return stations
+
+    def parseLocation(self, responseLoc):
+
+        if responseLoc.get("type") != 'location':
+            return
+
+        self.position = location.Coordinates(responseLoc.get("latitude"), responseLoc.get("longitude"))
 
     def getProducts(self):
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
@@ -59,7 +68,11 @@ class Station:
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
-            self.name = response.json()["name"]
+
+            resJson = response.json()
+
+            self.name = resJson.get("name", "")
+            self.parseLocation(resJson.get("location"))
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
