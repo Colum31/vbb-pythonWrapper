@@ -16,6 +16,7 @@ vbbpy is a python wrapper for the vbb REST API written by derHuerst_.
    :caption: Contents:
 
    reference
+   quickstart/quickstart
 
 
 Installation
