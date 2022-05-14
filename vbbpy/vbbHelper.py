@@ -5,14 +5,34 @@ API_HOST = "https://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
 API_GET_JOURNEY = "journeys"
-DEBUG = True
-HEADER = {"User-Agent": "vbb-pythonWrapper (in development)"}
+DEBUG = False
+HEADER = {"User-Agent": "vbb-pythonWrapper (application not specified)"}
 
 
 class VbbHelper:
 
     @staticmethod
-    def fetchRequest(requestString, queryParams):
+    def setUserAgent(newUserAgent: str) -> None:
+        """
+        Sets the User Agent used when fetching the request.
+        :param newUserAgent: New user agent to use
+        :return: None
+        """
+        global HEADER
+        HEADER = {"User-Agent": newUserAgent}
+
+    @staticmethod
+    def setDebug(to: bool = True) -> None:
+        """
+        Sets debug flag to specified state.
+        :param to: state to set Debug to. By default, sets it to True.
+        :return: None
+        """
+        global DEBUG
+        DEBUG = to
+
+    @staticmethod
+    def fetchRequest(requestString: str, queryParams: dict):
         """
         Sends the request.
 
@@ -35,7 +55,7 @@ class VbbHelper:
         return response
 
     @staticmethod
-    def getMinutesToDepartures(depTime, delay):
+    def getMinutesToDepartures(depTime: str, delay: int) -> int:
         """
         Calculates approximate minutes to a departure.
         :param depTime: ISO datetime string of the planned departure
@@ -54,7 +74,7 @@ class VbbHelper:
         return int(diff_seconds / 60)
 
     @staticmethod
-    def getDateTimeHourMinuteString(dt, delay=0):
+    def getDateTimeHourMinuteString(dt: str, delay: int = 0) -> str:
         """
         Makes a string containing hour and minute of a given datetime.
         :param dt: datetime string to calculate string for
