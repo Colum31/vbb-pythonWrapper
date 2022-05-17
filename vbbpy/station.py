@@ -275,7 +275,7 @@ class Station:
 
             for dep in response:
 
-                lineResponse = dep["depLine"]
+                lineResponse = dep["line"]
                 newLine = line.Line(lineResponse["id"], lineResponse["name"], lineResponse["product"])
 
                 newDeparture = departure.Departure(dep["tripId"], dep["plannedWhen"], dep["delay"], newLine,
