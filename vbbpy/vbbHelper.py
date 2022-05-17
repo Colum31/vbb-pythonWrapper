@@ -10,6 +10,9 @@ HEADER = {"User-Agent": "vbb-pythonWrapper (application not specified)"}
 
 
 class VbbHelper:
+    """
+    A helper class for the library.
+    """
 
     @staticmethod
     def setUserAgent(newUserAgent: str) -> None:

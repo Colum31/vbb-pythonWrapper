@@ -4,3 +4,6 @@ venv/
 build/
 vbbpy.egg-info/
 .pytest_cache/
+
+# Sphinx related directories
+doc/generated

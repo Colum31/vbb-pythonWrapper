@@ -12,6 +12,8 @@ from vbbpy import station
 
 def getDeparturesFromStation(idString, time=10):
     testStation = station.Station(idString)
+
+#    uncomment to print also station information
 #    testStation.getProducts()
 #    testStation.getLines()
 

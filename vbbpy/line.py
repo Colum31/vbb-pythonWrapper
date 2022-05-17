@@ -7,7 +7,7 @@ class Line:
     name = ""
     product = ""
 
-    def __init__(self, lineId, name, product):
+    def __init__(self, lineId: str, name: str, product: str):
         self.lineId = lineId
         self.name = name
         self.product = product
