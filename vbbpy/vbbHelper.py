@@ -5,8 +5,8 @@ API_HOST = "https://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
 API_GET_JOURNEY = "journeys"
-DEBUG = True
-HEADER = {"User-Agent": "vbb-pythonWrapper (in development)"}
+DEBUG = False
+HEADER = {"User-Agent": "vbb-pythonWrapper (application not specified)"}
 
 
 class VbbHelper:
@@ -15,7 +15,27 @@ class VbbHelper:
     """
 
     @staticmethod
-    def fetchRequest(requestString: str, queryParams: dict) -> requests.Response:
+    def setUserAgent(newUserAgent: str) -> None:
+        """
+        Sets the User Agent used when fetching the request.
+        :param newUserAgent: New user agent to use
+        :return: None
+        """
+        global HEADER
+        HEADER = {"User-Agent": newUserAgent}
+
+    @staticmethod
+    def setDebug(to: bool = True) -> None:
+        """
+        Sets debug flag to specified state.
+        :param to: state to set Debug to. By default, sets it to True.
+        :return: None
+        """
+        global DEBUG
+        DEBUG = to
+
+    @staticmethod
+    def fetchRequest(requestString: str, queryParams: dict):
         """
         Sends the request.
 
