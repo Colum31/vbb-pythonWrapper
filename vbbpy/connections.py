@@ -118,10 +118,9 @@ class Connections:
 
                     lineObj = None
                     walking = False
-                    direction = ""
-
-                    arrivalDelay = 0
-                    departureDelay = 0
+                    direction = l.get("direction", "")
+                    arrivalDelay = int(l.get("arrivalDelay", "0") or 0)
+                    departureDelay = int(l.get("departureDelay", "0") or 0)
 
                     if "walking" in l:
 
@@ -136,21 +135,18 @@ class Connections:
                     else:
                         # "optional" responses that are not set when walking
                         lineObj = line.Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
-                        direction = l["direction"]
-                        arrivalDelay = int(l["arrivalDelay"] or 0)
-                        departureDelay = int(l["departureDelay"] or 0)
 
                         originName = l.get("origin").get("name")
                         destinationName = l.get("destination").get("name")
 
-                    newLeg = leg.Leg(originName, destinationName, lineObj, l["plannedDeparture"],
-                                     l["plannedArrival"], direction, walking)
+                    newLeg = leg.Leg(originName, destinationName, lineObj, l.get("plannedDeparture"),
+                                     l.get("plannedArrival"), direction, walking)
 
                     newLeg.departureDelay = departureDelay
                     newLeg.arrivalDelay = arrivalDelay
 
                     if walking:
-                        newLeg.walkingDistance = l["distance"]
+                        newLeg.walkingDistance = l.get("distance", -1)
 
                     newLeg.setTimeDuration()
                     journeyObj.legs.append(newLeg)
