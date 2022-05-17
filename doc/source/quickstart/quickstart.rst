@@ -100,6 +100,11 @@ You can access the information in the station object.
 Getting departures
 ==================
 
+.. note::
+
+    The departure times are being calculated with the current system time. If your machine time is set in another
+    timezone, your departure times will be offset.
+
 You can fetch information about upcoming departures via the function getDepartures(). You can supply the time limit as
 a optional parameter.
 

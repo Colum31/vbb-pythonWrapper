@@ -1,3 +1,4 @@
+import requests
 from vbbpy import vbbHelper, modes, line, departure, location
 
 
@@ -13,7 +14,7 @@ class Station:
     departures = list()
     position = None
 
-    def __init__(self, stationId, getName=True):
+    def __init__(self, stationId: str, getName: bool = True):
         self.stationId = stationId
 
         if getName:
@@ -23,7 +24,13 @@ class Station:
         return "{}: {} ".format(self.stationId, self.name)
 
     @staticmethod
-    def queryStations(query):
+    def queryStations(query: str) -> list:
+        """
+        Queries stations by their station name.
+
+        :param query: The station name to query.
+        :return: Returns a list of station with similar / same name as query.
+        """
 
         requestString = vbbHelper.API_HOST + vbbHelper.API_GET_STATIONS
         data = {"query": query, "fuzzy": True, "completion": True}
@@ -41,14 +48,26 @@ class Station:
 
         return stations
 
-    def parseLocation(self, responseLoc):
+    def parseLocation(self, responseLoc: dict) -> None:
+        """
+        Parses the stations location from an API response.
+
+        :param responseLoc: a part of the API response
+        :return: None
+        """
 
         if responseLoc.get("type") != 'location':
             return
 
         self.position = location.Coordinates(responseLoc.get("latitude"), responseLoc.get("longitude"))
 
-    def getProducts(self):
+    def getProducts(self) -> None:
+        """
+        Requests the products available at the Station.
+
+        :return: None
+        """
+
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
@@ -56,7 +75,13 @@ class Station:
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
-    def getLines(self):
+    def getLines(self) -> None:
+        """
+        Requests the lines available at the Station.
+
+        :return: None
+        """
+
         response = self.makeStationsRequest(self.stationId, modes.Modes.STATIONS_ID)
 
         if response.status_code == 200:
@@ -64,7 +89,13 @@ class Station:
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
-    def getStationName(self):
+    def getStationName(self) -> None:
+        """
+        Requests the stations name using it's id.
+
+        :return: None
+        """
+
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
@@ -76,7 +107,14 @@ class Station:
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
-    def getDepartures(self, span=10):
+    def getDepartures(self, span=10) -> None:
+        """
+        Requests the next departures from the station and stores them into calling object.
+
+        :param span Optional time limit for the departures to fetch.
+        :return: None
+        """
+
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID_DEPARTURES, span=span)
 
         if response.status_code == 200:
@@ -84,7 +122,12 @@ class Station:
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
-    def printFullInfo(self):
+    def printFullInfo(self) -> None:
+        """
+        Prints information about available products and lines of the station.
+
+        :return: None
+        """
         print("{} ({})".format(self.name, self.stationId))
 
         for transportMode in self.products:
@@ -102,7 +145,8 @@ class Station:
 
             print("")
 
-    def makeStationsRequest(self, stationId, mode, limit=3, fuzzy=False, completion=True):
+    def makeStationsRequest(self, stationId: str, mode: modes.Modes, limit: int = 3, fuzzy: bool = False,
+                            completion: bool = True) -> requests.Response:
         """
         Makes a request string and parameters in order to fetch information from station API endpoint. Makes the
         request via fetchRequest().
@@ -137,25 +181,25 @@ class Station:
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
-    def parseStationResponse(self, response, station, mode):
+    def parseStationResponse(self, response: dict, station, mode: modes.Modes) -> int:
         """
         Parses a station request.
 
         :param response: API station response to parse
         :param station: Station object to parse request into
         :param mode: type of information to parse
-        :return:    None, if the response is empty, or number of available lines
+        :return: Number of available lines or -1 on error
         """
 
         if not (type(response) is dict):
             print("response is not a dict")
-            return None
+            return -1
 
         dictItems = len(response)
 
         if dictItems == 0:
             print("Response is empty!")
-            return None
+            return -1
 
         if mode == modes.Modes.STATIONS_ID:
             # get further information about station: lines
@@ -168,7 +212,7 @@ class Station:
 
             return len(station.lines)
 
-    def makeStopsRequest(self, stopId, mode, span=10):
+    def makeStopsRequest(self, stopId: str, mode: modes.Modes, span: int = 10) -> requests.Response:
         """
         Makes a request string and parameters in order to fetch information from stops API endpoint. Makes the
         request via fetchRequest().
@@ -198,14 +242,14 @@ class Station:
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
-    def parseStopsResponse(self, response, mode, station):
+    def parseStopsResponse(self, response: dict, mode: modes.Modes, station) -> int:
         """
         Parses a stop request.
 
         :param response: API stop response to parse
         :param station: Station object to parse request into
         :param mode: type of information to parse
-        :return:    None, if the response is empty, or on other error
+        :return:    -1,  if the response is empty, or on other error
                         0 on success
         """
 
@@ -213,7 +257,7 @@ class Station:
 
         if dictItems == 0:
             print("Response is empty!")
-            return None
+            return -1
 
         if mode == modes.Modes.STOPS_ID:
             # parse products
@@ -221,7 +265,7 @@ class Station:
                 products = response["products"]
             except KeyError:
                 print("Error: No products found in response!")
-                return None
+                return -1
 
             for product in products:
                 if products[product]:
