@@ -38,10 +38,21 @@ class Journey:
 
         return stationStr + journeyString
 
-    def getTransfers(self):
+    def getTransfers(self) -> None:
+        """
+        Gets the amount of transfers and stores them in the calling object.
+
+        :return:
+        """
         self.numberTransfers = len(self.legs) - 1
 
-    def getTimeInfo(self):
+    def getTimeInfo(self) -> None:
+        """
+        Gets the length of the journey in minutes and stores it into calling object.
+
+        :return: None
+        """
+
         firstLeg = self.legs[0]
         lastLeg = self.legs[-1]
 

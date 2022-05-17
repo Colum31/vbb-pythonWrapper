@@ -1,4 +1,4 @@
-from vbbpy import vbbHelper
+from vbbpy import vbbHelper, line
 
 class Departure:
     """
@@ -8,19 +8,19 @@ class Departure:
     tripId = ""
     plannedWhen = ""
     delay = 0
-    line = None
+    depLine = None
     direction = ""
     cancelled = False
 
-    def __init__(self, tripId, plannedWhen, delay, line, direction):
+    def __init__(self, tripId: str, plannedWhen: str, delay: int, depLine: line.Line, direction: str):
         self.plannedWhen = plannedWhen
         self.tripId = tripId
         self.delay = delay
-        self.line = line
+        self.depLine = depLine
         self.direction = direction
 
     def __str__(self):
-        info = "{}  {}  {}".format(self.line.name, self.direction, vbbHelper.VbbHelper.getMinutesToDepartures(self.plannedWhen, self.delay))
+        info = "{}  {}  {}".format(self.depLine.name, self.direction, vbbHelper.VbbHelper.getMinutesToDepartures(self.plannedWhen, self.delay))
 
         if self.cancelled:
             info = info + " CANCELLED"

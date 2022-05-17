@@ -10,9 +10,12 @@ HEADER = {"User-Agent": "vbb-pythonWrapper (in development)"}
 
 
 class VbbHelper:
+    """
+    A helper class for the library.
+    """
 
     @staticmethod
-    def fetchRequest(requestString, queryParams):
+    def fetchRequest(requestString: str, queryParams: dict) -> requests.Response:
         """
         Sends the request.
 
@@ -35,7 +38,7 @@ class VbbHelper:
         return response
 
     @staticmethod
-    def getMinutesToDepartures(depTime, delay):
+    def getMinutesToDepartures(depTime: str, delay: int) -> int:
         """
         Calculates approximate minutes to a departure.
         :param depTime: ISO datetime string of the planned departure
@@ -54,7 +57,7 @@ class VbbHelper:
         return int(diff_seconds / 60)
 
     @staticmethod
-    def getDateTimeHourMinuteString(dt, delay=0):
+    def getDateTimeHourMinuteString(dt: str, delay: int = 0) -> str:
         """
         Makes a string containing hour and minute of a given datetime.
         :param dt: datetime string to calculate string for

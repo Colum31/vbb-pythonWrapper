@@ -111,7 +111,7 @@ class Station:
         """
         Requests the next departures from the station and stores them into calling object.
 
-        :param span Optional time limit for the departures to fetch.
+        :param span: Optional time limit for the departures to fetch.
         :return: None
         """
 
@@ -275,7 +275,7 @@ class Station:
 
             for dep in response:
 
-                lineResponse = dep["line"]
+                lineResponse = dep["depLine"]
                 newLine = line.Line(lineResponse["id"], lineResponse["name"], lineResponse["product"])
 
                 newDeparture = departure.Departure(dep["tripId"], dep["plannedWhen"], dep["delay"], newLine,

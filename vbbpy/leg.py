@@ -1,6 +1,6 @@
 import datetime
 
-from vbbpy import vbbHelper
+from vbbpy import vbbHelper, line
 
 class Leg:
     """
@@ -26,7 +26,7 @@ class Leg:
     walking = False
     walkingDistance = 0
 
-    def __init__(self, origin, destination, transportLine, plannedDeparture, plannedArrival,  lineDirection, walking):
+    def __init__(self, origin: str, destination: str, transportLine: line.Line, plannedDeparture, plannedArrival,  lineDirection: str, walking: bool):
 
         self.origin = origin
         self.destination = destination
@@ -52,7 +52,12 @@ class Leg:
             lineStr = "{} {}".format(self.transportLine.name, self.lineDirection)
             return depStr + lineStr + arrStr
 
-    def setTimeDuration(self):
+    def setTimeDuration(self) -> None:
+        """
+        Calculates and sets time required for the leg.
+
+        :return: None
+        """
 
         diff = datetime.datetime.fromisoformat(self.plannedArrival) - datetime.datetime.fromisoformat(self.plannedDeparture)
         diff_seconds = diff.total_seconds()

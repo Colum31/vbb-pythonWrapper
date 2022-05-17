@@ -1,3 +1,4 @@
+import requests
 from vbbpy import line, modes, station, leg, vbbHelper, journey, location
 
 
@@ -54,15 +55,21 @@ class Connections:
 
         return stationStr + allRoutesStr
 
-    def getConnections(self):
-        response = self.makeJourneyRequest(modes.Modes.JOURNEY_BY_ID)
+    def getConnections(self) -> None:
+        """
+        Gets routes between origin and destination that are stored in calling object.
+
+        :return: None
+        """
+
+        response = self.makeJourneyRequest()
 
         if response.status_code == 200:
             self.parseJourneyResponse(response.json(), modes.Modes.JOURNEY_BY_ID)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
-    def makeJourneyRequest(self, mode):
+    def makeJourneyRequest(self) -> requests.Response:
         """
         Makes a request string and parameters in order to fetch information from journey API endpoint. Makes the
         request via fetchRequest().
@@ -90,7 +97,7 @@ class Connections:
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
-    def parseJourneyResponse(self, response, mode):
+    def parseJourneyResponse(self, response: dict, mode: modes.Modes) -> None:
         # TODO: split this function into journey and leg class member functions
         """
         Parses a journey request.
