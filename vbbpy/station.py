@@ -192,13 +192,11 @@ class Station:
         """
 
         if not (type(response) is dict):
-            print("response is not a dict")
             return -1
 
         dictItems = len(response)
 
         if dictItems == 0:
-            print("Response is empty!")
             return -1
 
         if mode == modes.Modes.STATIONS_ID:
