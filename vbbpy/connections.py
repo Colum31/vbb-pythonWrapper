@@ -1,5 +1,5 @@
 import requests
-from vbbpy import line, modes, station, leg, vbbHelper, journey, location
+from vbbpy import modes, station, vbbHelper, journey, location
 
 
 class Connections:
@@ -39,7 +39,6 @@ class Connections:
             routeStr = "[{}] -> [{}] ({}min): ".format(vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyStart),
                                                        vbbHelper.VbbHelper.getDateTimeHourMinuteString(r.journeyEnd),
                                                        r.journeyLength)
-
             for l in r.legs:
                 mode = l.transportLine
 
@@ -115,51 +114,7 @@ class Connections:
 
             for j in journeys:
 
-                journeyObj = journey.Journey(self.originStation,
-                                             self.destinationStation)
-                journeyObj.legs = list()
-
-                legs = j["legs"]
-
-                for l in legs:
-
-                    lineObj = None
-                    walking = False
-                    direction = l.get("direction", "")
-                    arrivalDelay = int(l.get("arrivalDelay", "0") or 0)
-                    departureDelay = int(l.get("departureDelay", "0") or 0)
-
-                    if "walking" in l:
-
-                        if l["origin"]["id"] == l["destination"]["id"]:
-                            # filter out transfer on station
-                            continue
-
-                        originName = l.get("origin").get("name") or l.get("origin").get("address", "")
-                        destinationName = l.get("destination").get("name") or l.get("destination").get("address", "")
-
-                        walking = True
-                    else:
-                        # "optional" responses that are not set when walking
-                        lineObj = line.Line(l["line"]["id"], l["line"]["name"], l["line"]["product"])
-
-                        originName = l.get("origin").get("name")
-                        destinationName = l.get("destination").get("name")
-
-                    newLeg = leg.Leg(originName, destinationName, lineObj, l.get("plannedDeparture"),
-                                     l.get("plannedArrival"), direction, walking)
-
-                    newLeg.departureDelay = departureDelay
-                    newLeg.arrivalDelay = arrivalDelay
-
-                    if walking:
-                        newLeg.walkingDistance = l.get("distance", -1)
-
-                    newLeg.setTimeDuration()
-                    journeyObj.legs.append(newLeg)
-
-                journeyObj.getTransfers()
-                journeyObj.getTimeInfo()
-                self.routes.append(journeyObj)
+                newJourney = journey.Journey(self.originStation, self.destinationStation, j)
+                self.routes.append(newJourney)
 
         return

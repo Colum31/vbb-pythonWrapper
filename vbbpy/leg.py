@@ -26,17 +26,40 @@ class Leg:
     walking = False
     walkingDistance = 0
 
-    def __init__(self, origin: str, destination: str, transportLine: line.Line, plannedDeparture, plannedArrival,  lineDirection: str, walking: bool):
+    invalidLeg = False
 
-        self.origin = origin
-        self.destination = destination
-        self.transportLine = transportLine
-        self.lineDirection = lineDirection
+    def __init__(self, legDict: dict):
 
-        self.plannedDeparture = plannedDeparture
-        self.plannedArrival = plannedArrival
+        if "walking" in legDict:
 
-        self.walking = walking
+            if legDict.get("origin").get("id") == legDict.get("destination").get("id"):
+                # filter out transfer on station, by setting invalid flag
+                self.invalidLeg = True
+                return
+
+            self.origin = legDict.get("origin").get("name") or legDict.get("origin").get("address", "")
+            self.destination = legDict.get("destination").get("name") or legDict.get("destination").get("address", "")
+
+            self.transportLine = None
+
+            self.walkingDistance = legDict.get("distance", -1)
+            self.walking = True
+        else:
+            # "optional" responses that are not set when walking
+            self.transportLine = line.Line(legDict.get("line").get("id"), legDict.get("line").get("name"),
+                                           legDict.get("line").get("product"))
+
+            self.origin = legDict.get("origin").get("name")
+            self.destination = legDict.get("destination").get("name")
+            self.walking = False
+
+        self.lineDirection = legDict.get("direction", "")
+        self.arrivalDelay = int(legDict.get("arrivalDelay", "0") or 0)
+        self.departureDelay = int(legDict.get("departureDelay", "0") or 0)
+        self.plannedDeparture = legDict.get("plannedDeparture")
+        self.plannedArrival = legDict.get("plannedArrival")
+
+        self.setTimeDuration()
 
     def __str__(self):
 

@@ -1,7 +1,7 @@
 import datetime
 from math import ceil
 
-from vbbpy import vbbHelper
+from vbbpy import vbbHelper, leg
 
 
 class Journey:
@@ -22,9 +22,23 @@ class Journey:
     journeyStart = ""
     journeyEnd = ""
 
-    def __init__(self, origin, destination):
+    def __init__(self, origin, destination, journeyDict: dict):
         self.originStation = origin
         self.destinationStation = destination
+
+        inputLegList = journeyDict.get("legs", list())
+        self.legs = list()
+
+        for rawLeg in inputLegList:
+
+            nextLeg = leg.Leg(rawLeg)
+
+            if not nextLeg.invalidLeg:
+                self.legs.append(nextLeg)
+
+        # calculate transfers and length of journey
+        self.getTransfers()
+        self.getTimeInfo()
 
     def __str__(self):
         stationStr = "{} -> {} \n-----------------------------------------\n".format(self.originStation.name,
