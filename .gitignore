@@ -6,4 +6,4 @@ vbbpy.egg-info/
 .pytest_cache/
 
 # Sphinx related directories
-doc/generated
+docs/generated
