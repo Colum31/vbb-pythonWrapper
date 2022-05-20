@@ -6,7 +6,7 @@ Example script for vbb-pythonWrapper.
 Author: Colum31
 """
 
-from vbbpy import station
+from vbbpy import station, vbbHelper
 import sys
 
 def getInformation(idString):
@@ -21,6 +21,12 @@ def main():
     if not len(sys.argv) == 2:
         print("usage: {} [station id]".format(sys.argv[0]))
         sys.exit(1)
+
+    # sets user agent to identify
+    vbbHelper.VbbHelper.setUserAgent("vbbpy: stationInformation example")
+
+    # uncomment to show queried url
+    # vbbHelper.VbbHelper.setDebug()
 
     getInformation(sys.argv[1])
 

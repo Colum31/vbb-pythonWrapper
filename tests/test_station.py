@@ -13,5 +13,5 @@ class StationClass(TestCase):
 
         testStation = station.Station("", getName=False)
         testData = {}
-        self.assertEqual(-1, testStation.parseStationResponse(testData, None, modes.Modes.STATIONS_ID),
+        self.assertEqual(-1, testStation.parseStationResponse(testData, modes.Modes.STATIONS_ID),
                          "expected to return -1 on empty response")

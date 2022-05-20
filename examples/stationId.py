@@ -7,7 +7,8 @@ Author: Colum31
 """
 
 import sys
-from vbbpy import station
+
+from vbbpy import station, vbbHelper
 
 
 def main():
@@ -16,6 +17,12 @@ def main():
         print("usage: {} [Station name]\n\nIf the station name contains a space, use quotation marks.\nExample: {} "
               "\"Zoologischer Garten\"".format(sys.argv[0], sys.argv[0]))
         sys.exit(1)
+
+    # sets user agent to identify
+    vbbHelper.VbbHelper.setUserAgent("vbbpy: stationId example")
+
+    # uncomment to show queried url
+    # vbbHelper.VbbHelper.setDebug()
 
     resultList = station.Station.queryStations(sys.argv[1])
 

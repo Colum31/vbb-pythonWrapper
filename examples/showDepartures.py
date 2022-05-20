@@ -7,7 +7,8 @@ Author: Colum31
 """
 
 import sys
-from vbbpy import station
+
+from vbbpy import station, vbbHelper
 
 
 def getDeparturesFromStation(idString, time=10):
@@ -30,9 +31,16 @@ def getDeparturesFromStation(idString, time=10):
 
 
 def main():
+
     if not (len(sys.argv) == 2 or len(sys.argv) == 3):
         print("usage: {} [station id] (optional: time limit)".format(sys.argv[0]))
         sys.exit(1)
+
+    # sets user agent to identify
+    vbbHelper.VbbHelper.setUserAgent("vbbpy: showDepartures example")
+
+    # uncomment to show queried url
+    # vbbHelper.VbbHelper.setDebug()
 
     # Parse optional time limit. Default value is 10 minutes.
     if len(sys.argv) == 3:

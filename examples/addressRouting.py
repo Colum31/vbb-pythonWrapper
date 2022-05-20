@@ -8,7 +8,7 @@ Author: Colum31
 """
 
 import sys
-from vbbpy import connections, location
+from vbbpy import connections, location, vbbHelper
 
 
 def addressLookup(addrStr):
@@ -26,6 +26,12 @@ def main():
         print("usage: {} [origin address] [destination address]\n\nIf the address or place contains a space, "
               "use quotation marks.\nExample: {} \"TU Berlin\" \"FU Berlin\"".format(sys.argv[0], sys.argv[0]))
         sys.exit(1)
+
+    # sets user agent to identify
+    vbbHelper.VbbHelper.setUserAgent("vbbpy: addressRouting example")
+
+    # uncomment to show queried url
+    # vbbHelper.VbbHelper.setDebug()
 
     origin = addressLookup(sys.argv[1])
     dest = addressLookup(sys.argv[2])

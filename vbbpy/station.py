@@ -71,7 +71,7 @@ class Station:
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID)
 
         if response.status_code == 200:
-            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID, self)
+            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -85,7 +85,7 @@ class Station:
         response = self.makeStationsRequest(self.stationId, modes.Modes.STATIONS_ID)
 
         if response.status_code == 200:
-            self.parseStationResponse(response.json(), self, modes.Modes.STATIONS_ID)
+            self.parseStationResponse(response.json(), modes.Modes.STATIONS_ID)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -118,7 +118,7 @@ class Station:
         response = self.makeStopsRequest(self.stationId, modes.Modes.STOPS_ID_DEPARTURES, span=span)
 
         if response.status_code == 200:
-            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID_DEPARTURES, self)
+            self.parseStopsResponse(response.json(), modes.Modes.STOPS_ID_DEPARTURES)
         else:
             print("Got invalid response\nstatus={}\n".format(response.status_code))
 
@@ -181,12 +181,11 @@ class Station:
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
-    def parseStationResponse(self, response: dict, station, mode: modes.Modes) -> int:
+    def parseStationResponse(self, response: dict, mode: modes.Modes) -> int:
         """
         Parses a station request.
 
         :param response: API station response to parse
-        :param station: Station object to parse request into
         :param mode: type of information to parse
         :return: Number of available lines or -1 on error
         """
@@ -206,9 +205,9 @@ class Station:
 
             for availableLine in lines:
                 addedLine = line.Line(availableLine["id"], availableLine["name"], availableLine["product"])
-                station.lines.append(addedLine)
+                self.lines.append(addedLine)
 
-            return len(station.lines)
+            return len(self.lines)
 
     def makeStopsRequest(self, stopId: str, mode: modes.Modes, span: int = 10) -> requests.Response:
         """
@@ -240,12 +239,11 @@ class Station:
 
         return vbbHelper.VbbHelper.fetchRequest(requestString, data)
 
-    def parseStopsResponse(self, response: dict, mode: modes.Modes, station) -> int:
+    def parseStopsResponse(self, response: dict, mode: modes.Modes) -> int:
         """
         Parses a stop request.
 
         :param response: API stop response to parse
-        :param station: Station object to parse request into
         :param mode: type of information to parse
         :return:    -1,  if the response is empty, or on other error
                         0 on success
@@ -267,7 +265,7 @@ class Station:
 
             for product in products:
                 if products[product]:
-                    station.products.append(product)
+                    self.products.append(product)
 
         elif mode == modes.Modes.STOPS_ID_DEPARTURES:
 
@@ -282,6 +280,6 @@ class Station:
                 if "cancelled" in dep:
                     newDeparture.cancelled = dep["cancelled"]
 
-                station.departures.append(newDeparture)
+                self.departures.append(newDeparture)
 
         return 0
