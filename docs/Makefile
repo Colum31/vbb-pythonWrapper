@@ -15,7 +15,7 @@ help:
 # build and copy documentation pages to doc/
 github:
 	@make html
-	@cp -a build/html/. ../doc
+	@cp -a build/html/. ../docs
 
 githubClean:
 	@rm *.html
