@@ -4,9 +4,7 @@
 ## Installation
 
 ```
-git clone https://github.com/Colum31/vbb-pythonWrapper.git
-cd vbb-pythonWrapper
-pip install .
+pip install vbbpy
 ```
 
 ## Features
@@ -20,3 +18,10 @@ vbbpy is able to:
 ## Usage 
 
 The examples folder contains some scripts that show the capabilities and usage of the library.
+The scripts are installed and can be called in the console:
+
+```
+$ vbbpy-stationId "Zoologischer Garten"
+```
+
+There is also documentation with a quick start guide and API reference.
