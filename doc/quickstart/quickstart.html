@@ -1,0 +1,249 @@
+
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
+    <title>Quick start guide &#8212; vbbpy 1.1.5 documentation</title>
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css" />
+    <link rel="stylesheet" type="text/css" href="../_static/alabaster.css" />
+    <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="prev" title="Modes" href="../classdoc/modes.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          
+
+          <div class="body" role="main">
+            
+  <section id="quick-start-guide">
+<h1>Quick start guide<a class="headerlink" href="#quick-start-guide" title="Permalink to this headline">¶</a></h1>
+<p>Many of the examples here are embedded in own scripts, which you can find in the example folder.
+You also can follow along within an interactive session.</p>
+<section id="starting-somewhere">
+<h2>Starting somewhere<a class="headerlink" href="#starting-somewhere" title="Permalink to this headline">¶</a></h2>
+<p>Journeys start from stations. Stations can be searched by their name, using the static function queryStations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy.station</span> <span class="kn">import</span> <span class="n">Station</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">list</span> <span class="o">=</span> <span class="n">Station</span><span class="o">.</span><span class="n">queryStations</span><span class="p">(</span><span class="s2">&quot;Zoologischer Garten&quot;</span><span class="p">)</span> <span class="c1"># stationName is a string</span>
+</pre></div>
+</div>
+<p>This will return a list of stations, initialized and ready to use.
+The station name does not need to be exact. The API will return up to 3 stations, that have the most familiar name.</p>
+<p>If you want to initialize a station object by hand, you need its unique id. This id can be obtained by querying it.
+You can then initialize it manually:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy.station</span> <span class="kn">import</span> <span class="n">Station</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="s2">&quot;900000023201&quot;</span><span class="p">)</span> <span class="c1"># id of &quot;Zoologischer Garten&quot;</span>
+</pre></div>
+</div>
+<p>You can print the information from a station with the usual print function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">demoStation</span><span class="p">)</span>
+<span class="go">900000023201: S+U Zoologischer Garten</span>
+</pre></div>
+</div>
+<p>This will print a stations name and id.</p>
+</section>
+<section id="starting-from-an-address">
+<h2>Starting from an address<a class="headerlink" href="#starting-from-an-address" title="Permalink to this headline">¶</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>You should check if the address is in Berlin / Brandenburg and valid before passing the object to any other function.</p>
+</div>
+<p>The vbb API requires the coordinates of an address to properly route. Luckily, we can use OpenStreetMaps to find the coordinates.
+Addresses are stored in an address object (duh) and contain an coordinates object accordingly.</p>
+<p>Similar to station querying, you pass a string containing the address in the constructor.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy</span> <span class="kn">import</span> <span class="n">location</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoLocation</span> <span class="o">=</span> <span class="n">location</span><span class="o">.</span><span class="n">Address</span><span class="p">(</span><span class="s2">&quot;TU Berlin&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also print it with print():</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">demoLocation</span><span class="p">)</span>
+<span class="go">Levetzowstraße</span>
+<span class="go">10555 Berlin</span>
+<span class="go">N13.326954140959668 E52.51101585</span>
+</pre></div>
+</div>
+</section>
+<section id="getting-a-stations-lines">
+<h2>Getting a stations lines<a class="headerlink" href="#getting-a-stations-lines" title="Permalink to this headline">¶</a></h2>
+<p>It might be useful to find out, which lines stop at a specific station.
+To find that out, you need a initialized station object.</p>
+<p>You then call two functions:</p>
+<div class="line-block">
+<div class="line">getProducts()   - This will fetch which products are available (bus, subway, train etc.)</div>
+<div class="line">getLines()      - This will fetch the lines of said products (245, U5, R1 …)</div>
+</div>
+<p>You can then print the results using the printFullInfo() function.
+Everything together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy.station</span> <span class="kn">import</span> <span class="n">Station</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="s2">&quot;900000023201&quot;</span><span class="p">)</span> <span class="c1"># id of &quot;Zoologischer Garten&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span><span class="o">.</span><span class="n">getProducts</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span><span class="o">.</span><span class="n">getLines</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span><span class="o">.</span><span class="n">printFullInfo</span><span class="p">()</span>
+<span class="go">S+U Zoologischer Garten (900000023201)</span>
+<span class="go">suburban: S7, S7, S9, S5, S5, S3, S3, S3</span>
+<span class="go">subway: U2, U3, U9</span>
+<span class="go">bus: X10, M45, M46, M49, N2, X34, N10, 110, 200, N9, 245, N1, 109, 249, 204, 100, N26, 200, N7X, 204, A05, RB14</span>
+<span class="go">express:</span>
+<span class="go">regional: RE1, RE2, RE7, RB22, RB14, RB21</span>
+</pre></div>
+</div>
+<p>You can access the information in the station object.</p>
+<div class="line-block">
+<div class="line">The products are stored in a the list “products” as strings.</div>
+<div class="line">The lines are stored in the list “lines” as line objects.</div>
+</div>
+</section>
+<section id="getting-departures">
+<h2>Getting departures<a class="headerlink" href="#getting-departures" title="Permalink to this headline">¶</a></h2>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The departure times are being calculated with the current system time. If your machine time is set in another
+timezone, your departure times will be offset.</p>
+</div>
+<p>You can fetch information about upcoming departures via the function getDepartures(). You can supply the time limit as
+a optional parameter.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy.station</span> <span class="kn">import</span> <span class="n">Station</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span> <span class="o">=</span> <span class="n">Station</span><span class="p">(</span><span class="s2">&quot;900000023201&quot;</span><span class="p">)</span> <span class="c1"># id of &quot;Zoologischer Garten&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoStation</span><span class="o">.</span><span class="n">getDepartures</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The departures are stored as departure object which can be printed by print():</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">demoStation</span><span class="o">.</span><span class="n">departures</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">dep</span><span class="p">)</span>
+<span class="gp">...</span>
+<span class="go">U2  U Theodor-Heuss-Platz  0</span>
+<span class="go">S5  S Westkreuz  1</span>
+<span class="go">109  Charlottenburg, Hertzallee  2</span>
+<span class="go">M45  Spandau, Johannesstift  2</span>
+<span class="go">U9  S+U Rathaus Steglitz  2</span>
+<span class="go">........</span>
+</pre></div>
+</div>
+<p>The time of the departure is displayed as rounded down minute ( 1:30 min to departure -&gt; 1, 0:45 -&gt; 0)
+The delay is already accounted. Sometimes negative values might be displayed, if the departure time was in the past, but
+the departure is still returned by the API (delay not accurate?).</p>
+<p>All of the information is available in the departure object.</p>
+</section>
+<section id="routing">
+<h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
+<p>The routing is made by the API. It returns possible routes between two addresses / stations .</p>
+<dl class="simple">
+<dt>Some terminology:</dt><dd><ul class="simple">
+<li><p>connections: The connections class holds information about possible routes (“journeys”).</p></li>
+<li><p>journey: A journey contains information about one possible route from start to endpoint. It contains of legs.</p></li>
+<li><p>leg: A leg describes one part of a journey (taking a bus, walking …)</p></li>
+</ul>
+</dd>
+</dl>
+<p>In order to get routes, a connections object must be filled with information and then getConnections() called.</p>
+<p>Origin and destination can be set by initializing a connections object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">vbbpy</span> <span class="kn">import</span> <span class="n">connections</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoRoutes</span> <span class="o">=</span> <span class="n">connections</span><span class="o">.</span><span class="n">Connections</span><span class="p">(</span><span class="n">origin</span><span class="p">,</span> <span class="n">dest</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">demoRoutes</span><span class="o">.</span><span class="n">getConnections</span><span class="p">()</span>
+</pre></div>
+</div>
+<dl class="simple">
+<dt>Where origin and dest can either be:</dt><dd><ul class="simple">
+<li><p>a station object</p></li>
+<li><p>a stationId as a string</p></li>
+<li><p>an address object</p></li>
+</ul>
+</dd>
+</dl>
+<p>The connections object will now contain routes from origin to dest, stored as journeys. These journeys can be iterated
+through and printed:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">demoRoutes</span><span class="o">.</span><span class="n">routes</span><span class="p">:</span>
+<span class="gp">... </span>    <span class="nb">print</span><span class="p">(</span><span class="n">j</span><span class="p">)</span>
+<span class="gp">...</span>
+</pre></div>
+</div>
+<p>If you print the connections object itself, you will get an overview of the journeys.</p>
+</section>
+</section>
+
+
+          </div>
+          
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">vbbpy</a></h1>
+
+
+
+
+
+
+
+
+<h3>Navigation</h3>
+<p class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../reference.html">Reference</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Quick start guide</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+      <li>Previous: <a href="../classdoc/modes.html" title="previous chapter">Modes</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script>$('#searchbox').show(0);</script>
+
+
+
+
+
+
+
+
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2022, colum31.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 4.5.0</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.12</a>
+      
+      |
+      <a href="../_sources/quickstart/quickstart.rst.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>
