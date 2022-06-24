@@ -5,6 +5,7 @@ API_HOST = "https://v5.vbb.transport.rest/"
 API_GET_STATIONS = "stations"
 API_GET_STOPS = "stops/"
 API_GET_JOURNEY = "journeys"
+API_GET_STOPS_NEARBY = "nearby"
 DEBUG = False
 HEADER = {"User-Agent": "vbb-pythonWrapper (application not specified)"}
 

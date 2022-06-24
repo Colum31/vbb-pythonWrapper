@@ -24,6 +24,33 @@ class Station:
         return "{}: {} ".format(self.stationId, self.name)
 
     @staticmethod
+    def getNearbyStations(loc: location.Coordinates, distance: int = 300,) -> list:
+        """
+        Gets nearby stations from a position.
+
+        :param loc: Location object of position
+        :param distance: Maximum distance to station from position in meters . Default value 300m.
+        :return: a list of nearby stations
+        """
+
+        requestString = vbbHelper.API_HOST + vbbHelper.API_GET_STOPS + vbbHelper.API_GET_STOPS_NEARBY
+        data = {"latitude": loc.latitude, "longitude": loc.longitude, "distance": distance}
+
+        response = vbbHelper.VbbHelper.fetchRequest(requestString, data).json()
+        nearbyStations = list()
+
+        for entry in response:
+            stationDistance = entry.get("distance")
+
+            newStation = Station(entry.get("id"), getName=False)
+            newStation.name = entry.get("name")
+            newStation.parseLocation(entry)
+
+            nearbyStations.append((newStation, stationDistance))
+
+        return nearbyStations
+
+    @staticmethod
     def queryStations(query: str) -> list:
         """
         Queries stations by their station name.

@@ -1,0 +1,53 @@
+#!/usr/bin/env python3
+"""
+nearbyStation - Get and show nearest stations from an address. Uses OpenStreetMap API, so some places are also
+recognized by their name.
+
+Example script for vbb-pythonWrapper.
+Author: Colum31
+
+"""
+
+import sys
+from vbbpy import vbbHelper, location, station
+
+
+def addressLookup(addrStr):
+    testAddr = location.Address(addrStr)
+
+#   uncomment to get more details on address
+#    print(testAddr)
+
+    return testAddr
+
+
+def main():
+
+    if not (len(sys.argv) == 2 or len(sys.argv) == 3):
+        print("usage: {} [origin address] [optional: maximum distance]\nIf the address or place contains a space, "
+              "use quotation marks.\nExample: {} \"TU Berlin\" ".format(sys.argv[0], sys.argv[0]))
+        sys.exit(1)
+
+    maxDistance = 500
+
+    if len(sys.argv) == 3:
+        maxDistance = sys.argv[2]
+
+    # sets user agent to identify
+    vbbHelper.VbbHelper.setUserAgent("vbbpy: nearbyStations example")
+
+    # uncomment to show queried url
+    vbbHelper.VbbHelper.setDebug()
+
+    loc = addressLookup(sys.argv[1])
+
+    nearbyStationsList = station.Station.getNearbyStations(loc.cords, maxDistance)
+
+    print(" station id  |   station name   | distance\n------------------------------------------")
+
+    for nearbyStation in nearbyStationsList:
+        print("{} | {} | {}m".format(nearbyStation[0].stationId, nearbyStation[0].name, nearbyStation[1]) )
+
+
+if __name__ == "__main__":
+    main()

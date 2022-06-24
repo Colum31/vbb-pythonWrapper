@@ -7,7 +7,6 @@ Author: Colum31
 """
 
 import sys
-
 from vbbpy import station, vbbHelper
 
 

@@ -17,5 +17,5 @@ setup(
     packages=['vbbpy'],
     install_requires=['requests', 'datetime', 'geopy'],  # external packages acting as dependencies
     scripts=['examples/vbbpy-stationId', 'examples/vbbpy-stationInformation', 'examples/vbbpy-showDepartures',
-             'examples/vbbpy-addressRouting']
+             'examples/vbbpy-addressRouting', 'examples/vbbpy-nearbyStations']
 )
