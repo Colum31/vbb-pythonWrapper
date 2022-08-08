@@ -40,7 +40,7 @@ class Station:
         nearbyStations = list()
 
         for entry in response:
-            stationDistance = entry.get("distance")
+            stationDistance = entry.get("distance") #todo: make more robust
 
             newStation = Station(entry.get("id"), getName=False)
             newStation.name = entry.get("name")

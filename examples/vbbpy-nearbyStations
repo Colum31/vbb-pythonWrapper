@@ -41,6 +41,10 @@ def main():
 
     loc = addressLookup(sys.argv[1])
 
+    if loc.initialised is False:
+        print("Address {} not found!".format(sys.argv[1]))
+        return
+
     nearbyStationsList = station.Station.getNearbyStations(loc.cords, maxDistance)
 
     print(" station id  |   station name   | distance\n------------------------------------------")

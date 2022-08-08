@@ -5,13 +5,13 @@ class Address:
     The Address class contains information about a physical address or place.
     """
 
-    name = ""
     streetName = ""
     number = 0
     postalCode = 0
     city = ""
 
     cords = None
+    initialised = False
 
     def getCords(self, inputStr: str, userAgent: str) -> None:
         """
@@ -25,7 +25,10 @@ class Address:
         geolocator = Nominatim(user_agent=userAgent)
         loc = geolocator.geocode(inputStr, addressdetails=True)
 
-        self.name = loc.address
+        if loc is None:
+            self.initialised = False
+            return
+
         self.cords = Coordinates(loc.latitude, loc.longitude)
 
         addressData = loc.raw.get('address')
@@ -34,6 +37,8 @@ class Address:
         self.number = addressData.get("house_number", "")
         self.postalCode = addressData.get("postcode", "")
         self.city = addressData.get("city", "")
+
+        self.initialised = True
 
     def __init__(self, inputStr: str, geopyUserAgent: str = "vbbpy: address lookup"):
         self.getCords(inputStr, geopyUserAgent)
