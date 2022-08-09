@@ -25,7 +25,7 @@ def main():
 
     resultList = station.Station.queryStations(sys.argv[1])
 
-    if resultList is None:
+    if len(resultList) == 0:
         print("No stations found.")
         return 1
 
