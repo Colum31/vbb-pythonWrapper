@@ -24,4 +24,4 @@ The scripts are installed and can be called in the console:
 $ vbbpy-stationId "Zoologischer Garten"
 ```
 
-There is also documentation with a quick start guide and API reference.
+There is also documentation with a quick start guide and [API reference](https://colum31.github.io/vbb-pythonWrapper/).
